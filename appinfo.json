@@ -1,0 +1,16 @@
+{
+    "uuid": "e0a6b525-74ba-42af-80d9-9924b09a7e69",
+    "shortName": "GW2 Boss Timers",
+    "longName": "GW2 Boss Timers",
+    "companyName": "ZDBioHazard",
+    "versionCode": 1,
+    "versionLabel": "1.0",
+    "watchapp": { "watchface": false },
+    "appKeys": { "tz_offset": 0 },
+    "resources": { "media": [ {
+        "type": "png",
+        "name": "MENU_ICON",
+        "file": "menu_icon.png",
+        "menuIcon": true
+    } ] }
+}
