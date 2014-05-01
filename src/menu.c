@@ -23,7 +23,7 @@
 #define MENU_HEADER_HEIGHT 17
 #define MENU_CELL_HEIGHT 30
 #define MENU_CURRENT_COUNT 1
-#define MENU_UPCOMING_COUNT 5
+#define MENU_UPCOMING_COUNT 16
 
 /*****************************************************************************/
 
@@ -43,7 +43,6 @@ static uint16_t menu_get_num_sections( MenuLayer *layer, void *data ){
 
 static uint16_t menu_get_num_rows( MenuLayer *layer, const uint16_t index, void *data ){
     /* TODO There might be multiple concurrent events someday. */
-    /* FIXME This is capped at 5 because timers over 99 minutes are ugly. */
     return index == 0 ? MENU_CURRENT_COUNT : MENU_UPCOMING_COUNT;
 }
 
@@ -66,18 +65,32 @@ static void menu_draw_header( GContext *ctx, const Layer *cell, const uint16_t i
 
 /* Draw individual rows. */
 static void menu_draw_row( GContext *ctx, const Layer *layer, MenuIndex *cell, void *data ){
-    unsigned char width = (cell->section == BOSS_SECTION_CURRENT) ? 140 : 94;
+    unsigned char width_list[] = { 0, 14, 24, 28, 38, 48, 52, 62, 72 };
+    unsigned char width = width_list[0];
     struct boss *boss = get_boss_info(cell->section, cell->row);
-    char time[] = "00:00:00";
+    char time[8] = { 0 };
 
     graphics_context_set_text_color(ctx, GColorBlack);
 
-    /* TODO Adjust the text frames to accommodate a larger or smaller times. */
+    /* Create the time string. Use a different formula for > 1 hour times. */
+    if ( boss->time >= 3600 )
+        snprintf(time, sizeof(time), "%d:%02d:%02d",
+                 boss->time / 3600, (boss->time / 60) % 60, boss->time % 60);
+    else
+        snprintf(time, sizeof(time), "%d:%02d",
+                 boss->time / 60, boss->time % 60);
+
+    /* Set the box widths based on time string length. I tried using
+     * graphics_text_layout_get_content_size() for this, but it seemed
+     * to make scrolling slower, so we're using a lookup table instead. */
+    if ( cell->section == BOSS_SECTION_UPCOMING )
+        width = width_list[strlen(time)];
 
     /* Draw the event title. */
     graphics_draw_text(ctx, boss->name,
                        fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
-                       (GRect){{2, -2}, {width, (MENU_CELL_HEIGHT / 2) + 2}},
+                       (GRect){{2, -2},
+                               {140 - width, (MENU_CELL_HEIGHT / 2) + 2}},
                        GTextOverflowModeTrailingEllipsis,
                        GTextAlignmentLeft, NULL);
 
@@ -85,7 +98,7 @@ static void menu_draw_row( GContext *ctx, const Layer *layer, MenuIndex *cell, v
     graphics_draw_text(ctx, boss->zone,
                        fonts_get_system_font(FONT_KEY_GOTHIC_14),
                        (GRect){{2, (MENU_CELL_HEIGHT / 2) - 3},
-                               {width, (MENU_CELL_HEIGHT / 2) + 2}},
+                               {140 - width, (MENU_CELL_HEIGHT / 2) + 2}},
                        GTextOverflowModeTrailingEllipsis,
                        GTextAlignmentLeft, NULL);
 
@@ -95,10 +108,10 @@ static void menu_draw_row( GContext *ctx, const Layer *layer, MenuIndex *cell, v
         return;
 
     /* Draw the event timer. */
-    snprintf(time, sizeof(time), "%d:%02d", boss->time / 60, boss->time % 60);
     graphics_draw_text(ctx, time,
                        fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD),
-                       (GRect){{98, -2}, {44, MENU_CELL_HEIGHT + 2}},
+                       (GRect){{142 - width, -2},
+                               {width, MENU_CELL_HEIGHT + 2}},
                        GTextOverflowModeWordWrap, GTextAlignmentRight, NULL);
 }
 
