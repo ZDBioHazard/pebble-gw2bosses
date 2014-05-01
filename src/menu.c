@@ -22,8 +22,13 @@
 
 #define MENU_HEADER_HEIGHT 17
 #define MENU_CELL_HEIGHT 30
+
+#define MENU_SECTION_COUNT 2
+#define MENU_SECTION_CURRENT 0
+#define MENU_SECTION_COMINGUP 1
+
 #define MENU_CURRENT_COUNT 1
-#define MENU_UPCOMING_COUNT 16
+#define MENU_COMINGUP_COUNT 32
 
 /*****************************************************************************/
 
@@ -38,19 +43,19 @@ static int16_t menu_get_cell_height( MenuLayer *layer, MenuIndex *index, void *d
 /*****************************************************************************/
 
 static uint16_t menu_get_num_sections( MenuLayer *layer, void *data ){
-    return 2;
+    return MENU_SECTION_COUNT;
 }
 
 static uint16_t menu_get_num_rows( MenuLayer *layer, const uint16_t index, void *data ){
     /* TODO There might be multiple concurrent events someday. */
-    return index == 0 ? MENU_CURRENT_COUNT : MENU_UPCOMING_COUNT;
+    return ( index == MENU_SECTION_CURRENT ) ? MENU_CURRENT_COUNT : MENU_COMINGUP_COUNT;
 }
 
 /*****************************************************************************/
 
 /* Just draw a basic header. */
 static void menu_draw_header( GContext *ctx, const Layer *cell, const uint16_t index, void *data ){
-    char *titles[] = {"Happening Now", "Coming up"};
+    char *titles[MENU_SECTION_COUNT] = { "Happening Now", "Coming Up" };
 
     graphics_context_set_stroke_color(ctx, GColorBlack);
     graphics_context_set_text_color(ctx, GColorBlack);
@@ -67,8 +72,8 @@ static void menu_draw_header( GContext *ctx, const Layer *cell, const uint16_t i
 static void menu_draw_row( GContext *ctx, const Layer *layer, MenuIndex *cell, void *data ){
     unsigned char width_list[] = { 0, 14, 24, 28, 38, 48, 52, 62, 72 };
     unsigned char width = width_list[0];
-    struct boss *boss = get_boss_info(cell->section, cell->row);
-    char time[8] = { 0 };
+    struct boss *boss = get_boss_info(cell->section ? false : true, cell->row);
+    char time[9] = { 0 };
 
     graphics_context_set_text_color(ctx, GColorBlack);
 
@@ -83,7 +88,7 @@ static void menu_draw_row( GContext *ctx, const Layer *layer, MenuIndex *cell, v
     /* Set the box widths based on time string length. I tried using
      * graphics_text_layout_get_content_size() for this, but it seemed
      * to make scrolling slower, so we're using a lookup table instead. */
-    if ( cell->section == BOSS_SECTION_UPCOMING )
+    if ( cell->section == MENU_SECTION_COMINGUP )
         width = width_list[strlen(time)];
 
     /* Draw the event title. */
@@ -104,7 +109,7 @@ static void menu_draw_row( GContext *ctx, const Layer *layer, MenuIndex *cell, v
 
     /* Skip the timer on the current entries. */
     /* TODO Display an uptime counter for the current event. */
-    if ( cell->section == BOSS_SECTION_CURRENT )
+    if ( cell->section == MENU_SECTION_CURRENT )
         return;
 
     /* Draw the event timer. */

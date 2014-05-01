@@ -20,17 +20,20 @@
 
 #include "gw2bosses.h"
 
-#define BOSS_MAX 90
+#define BOSS_INDEX_MAX 90
+#define BOSS_COUNT (BOSS_INDEX_MAX + 1)
 
-static struct boss bosses[]; /* This is at the bottom of the file. */
+/* This is at the bottom of the file. */
+static struct boss bosses[BOSS_COUNT];
 
 /*****************************************************************************/
 
+/* Update the timer values in the boss list. */
 void update_boss_times( const struct tm *time ){
     unsigned char index = 0;
     struct tm event = *time;
 
-    for ( index = 0 ; index <= BOSS_MAX ; index++ ){
+    for ( index = 0 ; index <= BOSS_INDEX_MAX ; index++ ){
         event = *time;
         event.tm_hour = bosses[index].hour;
         event.tm_min  = bosses[index].min;
@@ -52,24 +55,25 @@ void update_boss_times( const struct tm *time ){
 
 /*****************************************************************************/
 
-struct boss *get_boss_info( const int section, const int row ){
-    unsigned char index = BOSS_MAX;
+/* Return the info struct for a boss. */
+struct boss *get_boss_info( const bool active, const unsigned char offset ){
+    unsigned char index = BOSS_INDEX_MAX;
 
     /* Start at the end of the list and count up. Break at
      * the first entry that's larger than the previous entry. */
-    for ( index = BOSS_MAX ; index > 0 ; index-- )
+    for ( index = BOSS_INDEX_MAX ; index > 0 ; index-- )
         if ( bosses[index].time < bosses[index - 1].time )
             break;
 
     /* Only one boss can be current, so just return it now. */
-    if ( section == BOSS_SECTION_CURRENT )
-        return &bosses[(index == 0) ? BOSS_MAX : index - 1];
+    if ( active == true )
+        return &bosses[(index == 0) ? BOSS_INDEX_MAX : index - 1];
 
     /* Wrap the index if it goes over the end of the array. */
-    if ( index + row > BOSS_MAX )
-        return &bosses[(index + row) - (BOSS_MAX + 1)];
+    if ( index + offset > BOSS_INDEX_MAX )
+        return &bosses[(index + offset) - BOSS_COUNT];
 
-    return &bosses[index + row];
+    return &bosses[index + offset];
 }
 
 /*****************************************************************************/
@@ -80,9 +84,9 @@ struct boss *get_boss_info( const int section, const int row ){
  * the aformentioned automatic GCC memory deduplication without making a
  * complicated set of lookup tales, not to mention designing a format where
  * the data could fit in limited persistent storage chunks would be tricky. */
-/* XXX Don't forget to update BOSS_MAX above! */
+/* XXX Don't forget to update BOSS_INDEX_MAX above! */
 /* XXX Keeping this in ascending time order is IMPORTANT! */
-static struct boss bosses[] = {
+static struct boss bosses[BOSS_COUNT] = {
     { 0,  0, "The Shatterer", "Blazeridge Steppes", 0},
     { 0, 15, "Svanir Shaman", "Wayfarer Foothills", 0},
     { 0, 30, "Modniir Ulgoth", "Hirathi Hinterlands", 0},
