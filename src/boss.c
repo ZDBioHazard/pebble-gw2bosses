@@ -23,8 +23,44 @@
 #define BOSS_INDEX_MAX (boss_t)90
 #define BOSS_COUNT (BOSS_INDEX_MAX + 1)
 
-/* This is at the bottom of the file. */
-static struct boss bosses[BOSS_COUNT];
+static struct boss boss_info[BOSS_COUNT]; /* Defined below. */
+static signed int boss_times[BOSS_COUNT] = { 0 };
+
+/*****************************************************************************/
+
+/* Find and return the desired boss' array index. */
+static boss_t get_boss_index( const bool active, const boss_t offset ){
+    boss_t index = BOSS_INDEX_MAX;
+
+    /* Start at the end of the list and count up. Break at
+     * the first entry that's larger than the previous entry. */
+    for ( index = BOSS_INDEX_MAX ; index > 0 ; index-- )
+        if ( boss_times[index] < boss_times[index - 1] )
+            break;
+
+    /* Only one boss can be current, so just return it now. */
+    /* TODO More than one boss can be active at a time. */
+    if ( active == true )
+        return (index == 0) ? BOSS_INDEX_MAX : index - 1;
+
+    /* Wrap the index if it goes over the end of the array. */
+    if ( index + offset > BOSS_INDEX_MAX )
+        return (index + offset) - BOSS_COUNT;
+
+    return index + offset;
+}
+
+/*****************************************************************************/
+
+/* Return the info struct for a boss. */
+struct boss *get_boss_info( const bool active, const boss_t offset ){
+    return &boss_info[get_boss_index(active, offset)];
+}
+
+/* Return the timer for a boss. */
+signed int get_boss_timer( const boss_t index ){
+    return boss_times[get_boss_index(false, index)];
+}
 
 /*****************************************************************************/
 
@@ -34,9 +70,8 @@ void update_boss_times( const struct tm *time ){
     struct tm event = *time;
 
     for ( index = 0 ; index <= BOSS_INDEX_MAX ; index++ ){
-        event = *time;
-        event.tm_hour = bosses[index].hour;
-        event.tm_min  = bosses[index].min;
+        event.tm_hour = boss_info[index].hour;
+        event.tm_min  = boss_info[index].min;
         event.tm_sec  = 0;
 
         /* Add a day to events that have already happened today. */
@@ -48,32 +83,8 @@ void update_boss_times( const struct tm *time ){
         /* Yeah, this should probably use difftime(), but that includes
          * ~3K of extra library code in the binary, and this case isn't
          * likely to trigger any of difftime()'s edge cases anyway. */
-        bosses[index].time = (signed int)(bad_mktime(&event) -
-                                          bad_mktime(time));
+        boss_times[index] = (bad_mktime(&event) - bad_mktime(time));
     }
-}
-
-/*****************************************************************************/
-
-/* Return the info struct for a boss. */
-struct boss *get_boss_info( const bool active, const boss_t offset ){
-    boss_t index = BOSS_INDEX_MAX;
-
-    /* Start at the end of the list and count up. Break at
-     * the first entry that's larger than the previous entry. */
-    for ( index = BOSS_INDEX_MAX ; index > 0 ; index-- )
-        if ( bosses[index].time < bosses[index - 1].time )
-            break;
-
-    /* Only one boss can be current, so just return it now. */
-    if ( active == true )
-        return &bosses[(index == 0) ? BOSS_INDEX_MAX : index - 1];
-
-    /* Wrap the index if it goes over the end of the array. */
-    if ( index + offset > BOSS_INDEX_MAX )
-        return &bosses[(index + offset) - BOSS_COUNT];
-
-    return &bosses[index + offset];
 }
 
 /*****************************************************************************/
@@ -86,101 +97,101 @@ struct boss *get_boss_info( const bool active, const boss_t offset ){
  * the data could fit in limited persistent storage chunks would be tricky. */
 /* XXX Don't forget to update BOSS_INDEX_MAX above! */
 /* XXX Keeping this in ascending time order is IMPORTANT! */
-static struct boss bosses[BOSS_COUNT] = {
-    { 0,  0, "The Shatterer", "Blazeridge Steppes", 0},
-    { 0, 15, "Svanir Shaman", "Wayfarer Foothills", 0},
-    { 0, 30, "Modniir Ulgoth", "Hirathi Hinterlands", 0},
-    { 0, 45, "Fire Elemental", "Metrica Province", 0},
-    { 1,  0, "Karka Queen", "Southsun Cove", 0},
-    { 1, 15, "Great Jungle Wurm", "Caledon Forest", 0},
-    { 1, 30, "Golem Mark II", "Mount Maelstrom", 0},
-    { 1, 45, "Shadow Behemoth", "Queensdale", 0},
-    { 2,  0, "Tequatl the Sunless", "Sparkfly Fen", 0},
-    { 2, 15, "Svanir Shaman", "Wayfarer Foothills", 0},
-    { 2, 30, "Claw of Jormag", "Frostgorge Sound", 0},
-    { 2, 45, "Fire Elemental", "Metrica Province", 0},
-    { 3,  0, "Triple Trouble", "Bloodtide Coast", 0},
-    { 3, 15, "Great Jungle Wurm", "Caledon Forest", 0},
-    { 3, 30, "Taidha Covington", "Bloodtide Coast", 0},
-    { 3, 45, "Shadow Behemoth", "Queensdale", 0},
-    { 4,  0, "Megadestroyer", "Mount Maelstrom", 0},
-    { 4, 15, "Svanir Shaman", "Wayfarer Foothills", 0},
-    /* { 4, 30, "TBD", "Unknown", 0 }, */
-    { 4, 45, "Fire Elemental", "Metrica Province", 0},
-    { 5,  0, "The Shatterer", "Blazeridge Steppes", 0},
-    { 5, 15, "Great Jungle Wurm", "Caledon Forest", 0},
-    { 5, 30, "Modniir Ulgoth", "Hirathi Hinterlands", 0},
-    { 5, 45, "Shadow Behemoth", "Queensdale", 0},
-    { 6,  0, "Golem Mark II", "Mount Maelstrom", 0},
-    { 6, 15, "Svanir Shaman", "Wayfarer Foothills", 0},
-    { 6, 30, "Claw of Jormag", "Frostgorge Sound", 0},
-    { 6, 45, "Fire Elemental", "Metrica Province", 0},
-    { 7,  0, "The Shatterer", "Blazeridge Steppes", 0},
-    { 7, 15, "Great Jungle Wurm", "Caledon Forest", 0},
-    { 7, 30, "Modniir Ulgoth", "Hirathi Hinterlands", 0},
-    { 7, 45, "Shadow Behemoth", "Queensdale", 0},
-    { 8,  0, "Golem Mark II", "Mount Maelstrom", 0},
-    { 8, 15, "Svanir Shaman", "Wayfarer Foothills", 0},
-    { 8, 30, "Claw of Jormag", "Frostgorge Sound", 0},
-    { 8, 45, "Fire Elemental", "Metrica Province", 0},
-    { 9,  0, "Taidha Covington", "Bloodtide Coast", 0},
-    { 9, 15, "Great Jungle Wurm", "Caledon Forest", 0},
-    { 9, 30, "Megadestroyer", "Mount Maelstrom", 0},
-    { 9, 45, "Shadow Behemoth", "Queensdale", 0},
-    /* {10,  0, "TBD", "Unknown", 0 }, */
-    {10, 15, "Svanir Shaman", "Wayfarer Foothills", 0},
-    {10, 30, "Karka Queen", "Southsun Cove", 0},
-    {10, 45, "Fire Elemental", "Metrica Province", 0},
-    {11,  0, "The Shatterer", "Blazeridge Steppes", 0},
-    {11, 15, "Great Jungle Wurm", "Caledon Forest", 0},
-    {11, 30, "Tequatl the Sunless", "Sparkfly Fen", 0},
-    {11, 45, "Shadow Behemoth", "Queensdale", 0},
-    {12,  0, "Modniir Ulgoth", "Hirathi Hinterlands", 0},
-    {12, 15, "Svanir Shaman", "Wayfarer Foothills", 0},
-    {12, 30, "Triple Trouble", "Bloodtide Coast", 0},
-    {12, 45, "Fire Elemental", "Metrica Province", 0},
-    {13,  0, "Golem Mark II", "Mount Maelstrom", 0},
-    {13, 15, "Great Jungle Wurm", "Caledon Forest", 0},
-    {13, 30, "Claw of Jormag", "Frostgorge Sound", 0},
-    {13, 45, "Shadow Behemoth", "Queensdale", 0},
-    {14,  0, "Taidha Covington", "Bloodtide Coast", 0},
-    {14, 15, "Svanir Shaman", "Wayfarer Foothills", 0},
-    {14, 30, "Megadestroyer", "Mount Maelstrom", 0},
-    {14, 45, "Fire Elemental", "Metrica Province", 0},
-    /* {15,  0, "TBD", "Unknown", 0 }, */
-    {15, 15, "Great Jungle Wurm", "Caledon Forest", 0},
-    {15, 30, "The Shatterer", "Blazeridge Steppes", 0},
-    {15, 45, "Shadow Behemoth", "Queensdale", 0},
-    {16,  0, "Karka Queen", "Southsun Cove", 0},
-    {16, 15, "Svanir Shaman", "Wayfarer Foothills", 0},
-    {16, 30, "Modniir Ulgoth", "Hirathi Hinterlands", 0},
-    {16, 45, "Fire Elemental", "Metrica Province", 0},
-    {17,  0, "Tequatl the Sunless", "Sparkfly Fen", 0},
-    {17, 15, "Great Jungle Wurm", "Caledon Forest", 0},
-    {17, 30, "Golem Mark II", "Mount Maelstrom", 0},
-    {17, 45, "Shadow Behemoth", "Queensdale", 0},
-    {18,  0, "Triple Trouble", "Bloodtide Coast", 0},
-    {18, 15, "Svanir Shaman", "Wayfarer Foothills", 0},
-    {18, 30, "Claw of Jormag", "Frostgorge Sound", 0},
-    {18, 45, "Fire Elemental", "Metrica Province", 0},
-    {19,  0, "Taidha Covington", "Bloodtide Coast", 0},
-    {19, 15, "Great Jungle Wurm", "Caledon Forest", 0},
-    {19, 30, "Megadestroyer", "Mount Maelstrom", 0},
-    {19, 45, "Shadow Behemoth", "Queensdale", 0},
-    /* {20,  0, "TBD", "Unknown", 0 }, */
-    {20, 15, "Svanir Shaman", "Wayfarer Foothills", 0},
-    {20, 30, "The Shatterer", "Blazeridge Steppes", 0},
-    {20, 45, "Fire Elemental", "Metrica Province", 0},
-    {21,  0, "Modniir Ulgoth", "Hirathi Hinterlands", 0},
-    {21, 15, "Great Jungle Wurm", "Caledon Forest", 0},
-    {21, 30, "Golem Mark II", "Mount Maelstrom", 0},
-    {21, 45, "Shadow Behemoth", "Queensdale", 0},
-    {22,  0, "Claw of Jormag", "Frostgorge Sound", 0},
-    {22, 15, "Svanir Shaman", "Wayfarer Foothills", 0},
-    {22, 30, "Taidha Covington", "Bloodtide Coast", 0},
-    {22, 45, "Fire Elemental", "Metrica Province", 0},
-    {23,  0, "Megadestroyer", "Mount Maelstrom", 0},
-    {23, 15, "Great Jungle Wurm", "Caledon Forest", 0},
-    /* {23, 30, "TBD", "Unknown", 0 }, */
-    {23, 45, "Shadow Behemoth", "Queensdale", 0},
+static struct boss boss_info[BOSS_COUNT] = {
+    { 0,  0, "The Shatterer", "Blazeridge Steppes"},
+    { 0, 15, "Svanir Shaman", "Wayfarer Foothills"},
+    { 0, 30, "Modniir Ulgoth", "Hirathi Hinterlands"},
+    { 0, 45, "Fire Elemental", "Metrica Province"},
+    { 1,  0, "Karka Queen", "Southsun Cove"},
+    { 1, 15, "Great Jungle Wurm", "Caledon Forest"},
+    { 1, 30, "Golem Mark II", "Mount Maelstrom"},
+    { 1, 45, "Shadow Behemoth", "Queensdale"},
+    { 2,  0, "Tequatl the Sunless", "Sparkfly Fen"},
+    { 2, 15, "Svanir Shaman", "Wayfarer Foothills"},
+    { 2, 30, "Claw of Jormag", "Frostgorge Sound"},
+    { 2, 45, "Fire Elemental", "Metrica Province"},
+    { 3,  0, "Triple Trouble", "Bloodtide Coast"},
+    { 3, 15, "Great Jungle Wurm", "Caledon Forest"},
+    { 3, 30, "Taidha Covington", "Bloodtide Coast"},
+    { 3, 45, "Shadow Behemoth", "Queensdale"},
+    { 4,  0, "Megadestroyer", "Mount Maelstrom"},
+    { 4, 15, "Svanir Shaman", "Wayfarer Foothills"},
+    /* { 4, 30, "TBD", "Unknown"}, */
+    { 4, 45, "Fire Elemental", "Metrica Province"},
+    { 5,  0, "The Shatterer", "Blazeridge Steppes"},
+    { 5, 15, "Great Jungle Wurm", "Caledon Forest"},
+    { 5, 30, "Modniir Ulgoth", "Hirathi Hinterlands"},
+    { 5, 45, "Shadow Behemoth", "Queensdale"},
+    { 6,  0, "Golem Mark II", "Mount Maelstrom"},
+    { 6, 15, "Svanir Shaman", "Wayfarer Foothills"},
+    { 6, 30, "Claw of Jormag", "Frostgorge Sound"},
+    { 6, 45, "Fire Elemental", "Metrica Province"},
+    { 7,  0, "The Shatterer", "Blazeridge Steppes"},
+    { 7, 15, "Great Jungle Wurm", "Caledon Forest"},
+    { 7, 30, "Modniir Ulgoth", "Hirathi Hinterlands"},
+    { 7, 45, "Shadow Behemoth", "Queensdale"},
+    { 8,  0, "Golem Mark II", "Mount Maelstrom"},
+    { 8, 15, "Svanir Shaman", "Wayfarer Foothills"},
+    { 8, 30, "Claw of Jormag", "Frostgorge Sound"},
+    { 8, 45, "Fire Elemental", "Metrica Province"},
+    { 9,  0, "Taidha Covington", "Bloodtide Coast"},
+    { 9, 15, "Great Jungle Wurm", "Caledon Forest"},
+    { 9, 30, "Megadestroyer", "Mount Maelstrom"},
+    { 9, 45, "Shadow Behemoth", "Queensdale"},
+    /* {10,  0, "TBD", "Unknown"}, */
+    {10, 15, "Svanir Shaman", "Wayfarer Foothills"},
+    {10, 30, "Karka Queen", "Southsun Cove"},
+    {10, 45, "Fire Elemental", "Metrica Province"},
+    {11,  0, "The Shatterer", "Blazeridge Steppes"},
+    {11, 15, "Great Jungle Wurm", "Caledon Forest"},
+    {11, 30, "Tequatl the Sunless", "Sparkfly Fen"},
+    {11, 45, "Shadow Behemoth", "Queensdale"},
+    {12,  0, "Modniir Ulgoth", "Hirathi Hinterlands"},
+    {12, 15, "Svanir Shaman", "Wayfarer Foothills"},
+    {12, 30, "Triple Trouble", "Bloodtide Coast"},
+    {12, 45, "Fire Elemental", "Metrica Province"},
+    {13,  0, "Golem Mark II", "Mount Maelstrom"},
+    {13, 15, "Great Jungle Wurm", "Caledon Forest"},
+    {13, 30, "Claw of Jormag", "Frostgorge Sound"},
+    {13, 45, "Shadow Behemoth", "Queensdale"},
+    {14,  0, "Taidha Covington", "Bloodtide Coast"},
+    {14, 15, "Svanir Shaman", "Wayfarer Foothills"},
+    {14, 30, "Megadestroyer", "Mount Maelstrom"},
+    {14, 45, "Fire Elemental", "Metrica Province"},
+    /* {15,  0, "TBD", "Unknown"}, */
+    {15, 15, "Great Jungle Wurm", "Caledon Forest"},
+    {15, 30, "The Shatterer", "Blazeridge Steppes"},
+    {15, 45, "Shadow Behemoth", "Queensdale"},
+    {16,  0, "Karka Queen", "Southsun Cove"},
+    {16, 15, "Svanir Shaman", "Wayfarer Foothills"},
+    {16, 30, "Modniir Ulgoth", "Hirathi Hinterlands"},
+    {16, 45, "Fire Elemental", "Metrica Province"},
+    {17,  0, "Tequatl the Sunless", "Sparkfly Fen"},
+    {17, 15, "Great Jungle Wurm", "Caledon Forest"},
+    {17, 30, "Golem Mark II", "Mount Maelstrom"},
+    {17, 45, "Shadow Behemoth", "Queensdale"},
+    {18,  0, "Triple Trouble", "Bloodtide Coast"},
+    {18, 15, "Svanir Shaman", "Wayfarer Foothills"},
+    {18, 30, "Claw of Jormag", "Frostgorge Sound"},
+    {18, 45, "Fire Elemental", "Metrica Province"},
+    {19,  0, "Taidha Covington", "Bloodtide Coast"},
+    {19, 15, "Great Jungle Wurm", "Caledon Forest"},
+    {19, 30, "Megadestroyer", "Mount Maelstrom"},
+    {19, 45, "Shadow Behemoth", "Queensdale"},
+    /* {20,  0, "TBD", "Unknown"}, */
+    {20, 15, "Svanir Shaman", "Wayfarer Foothills"},
+    {20, 30, "The Shatterer", "Blazeridge Steppes"},
+    {20, 45, "Fire Elemental", "Metrica Province"},
+    {21,  0, "Modniir Ulgoth", "Hirathi Hinterlands"},
+    {21, 15, "Great Jungle Wurm", "Caledon Forest"},
+    {21, 30, "Golem Mark II", "Mount Maelstrom"},
+    {21, 45, "Shadow Behemoth", "Queensdale"},
+    {22,  0, "Claw of Jormag", "Frostgorge Sound"},
+    {22, 15, "Svanir Shaman", "Wayfarer Foothills"},
+    {22, 30, "Taidha Covington", "Bloodtide Coast"},
+    {22, 45, "Fire Elemental", "Metrica Province"},
+    {23,  0, "Megadestroyer", "Mount Maelstrom"},
+    {23, 15, "Great Jungle Wurm", "Caledon Forest"},
+    /* {23, 30, "TBD", "Unknown"}, */
+    {23, 45, "Shadow Behemoth", "Queensdale"},
 };

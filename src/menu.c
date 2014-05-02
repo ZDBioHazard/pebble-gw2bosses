@@ -70,26 +70,40 @@ static void menu_draw_header( GContext *ctx, const Layer *cell, const uint16_t i
 
 /* Draw individual rows. */
 static void menu_draw_row( GContext *ctx, const Layer *layer, MenuIndex *cell, void *data ){
+    struct boss *boss = get_boss_info(cell->section ? false : true, cell->row);
     unsigned char width_list[] = { 0, 14, 24, 28, 38, 48, 52, 62, 72 };
     unsigned char width = width_list[0];
-    struct boss *boss = get_boss_info(cell->section ? false : true, cell->row);
-    char time[9] = { 0 };
+    char time_text[9] = { 0 };
+    signed int timer = 0;
 
     graphics_context_set_text_color(ctx, GColorBlack);
 
-    /* Create the time string. Use a different formula for > 1 hour times. */
-    if ( boss->time >= 3600 )
-        snprintf(time, sizeof(time), "%d:%02d:%02d",
-                 boss->time / 3600, (boss->time / 60) % 60, boss->time % 60);
-    else
-        snprintf(time, sizeof(time), "%d:%02d",
-                 boss->time / 60, boss->time % 60);
+    /* Skip the timer on the current entries. */
+    /* TODO Display an uptime counter for the current event. */
+    if ( cell->section == MENU_SECTION_COMINGUP ){
+        timer = get_boss_timer(cell->row);
 
-    /* Set the box widths based on time string length. I tried using
-     * graphics_text_layout_get_content_size() for this, but it seemed
-     * to make scrolling slower, so we're using a lookup table instead. */
-    if ( cell->section == MENU_SECTION_COMINGUP )
-        width = width_list[strlen(time)];
+        /* Create the time string. Use a different formula for > 1 hour times. */
+        if ( timer >= 3600 )
+            snprintf(time_text, sizeof(time_text), "%d:%02d:%02d",
+                     timer / 3600, (timer / 60) % 60, timer % 60);
+        else
+            snprintf(time_text, sizeof(time_text), "%d:%02d",
+                     timer / 60, timer % 60);
+
+        /* Set the box widths based on time string length. I tried using
+         * graphics_text_layout_get_content_size() for this, but it seemed
+         * to make scrolling slower, so we're using a lookup table instead. */
+        width = width_list[strlen(time_text)];
+
+        /* Draw the event timer. */
+        graphics_draw_text(ctx, time_text,
+                           fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD),
+                           (GRect){{142 - width, -2},
+                                   {width, MENU_CELL_HEIGHT + 2}},
+                           GTextOverflowModeWordWrap,
+                           GTextAlignmentRight, NULL);
+    }
 
     /* Draw the event title. */
     graphics_draw_text(ctx, boss->name,
@@ -106,18 +120,6 @@ static void menu_draw_row( GContext *ctx, const Layer *layer, MenuIndex *cell, v
                                {140 - width, (MENU_CELL_HEIGHT / 2) + 2}},
                        GTextOverflowModeTrailingEllipsis,
                        GTextAlignmentLeft, NULL);
-
-    /* Skip the timer on the current entries. */
-    /* TODO Display an uptime counter for the current event. */
-    if ( cell->section == MENU_SECTION_CURRENT )
-        return;
-
-    /* Draw the event timer. */
-    graphics_draw_text(ctx, time,
-                       fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD),
-                       (GRect){{142 - width, -2},
-                               {width, MENU_CELL_HEIGHT + 2}},
-                       GTextOverflowModeWordWrap, GTextAlignmentRight, NULL);
 }
 
 /*****************************************************************************/

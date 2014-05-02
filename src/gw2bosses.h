@@ -30,7 +30,6 @@ struct boss {
     const unsigned char min;
     const char *name;
     const char *zone;
-    unsigned int time;
 };
 
 /* menu.c */
@@ -39,6 +38,7 @@ MenuLayer *boss_menu_layer_create( const GRect bounds );
 /* boss.c */
 void update_boss_times( const struct tm *time );
 struct boss *get_boss_info( const bool active, const boss_t index );
+signed int get_boss_timer( const boss_t index );
 
 /* time.c */
 time_t bad_mktime( const struct tm *time );
