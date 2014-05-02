@@ -110,7 +110,7 @@ static void menu_draw_row( GContext *ctx, const Layer *layer, MenuIndex *cell, v
             /* Set the text frame offset so we have space to draw. */
             offset = 8;
 
-            /* Draw an exclamation mark using 2 rects. */
+            /* Draw an exclamation point using 2 tiny rectangles. */
             graphics_draw_rect(ctx, (GRect){{4, 6}, {2, 12}});
             graphics_draw_rect(ctx, (GRect){{4, 22}, {2, 2}});
         }

@@ -22,6 +22,8 @@
 
 #define APPMSG_KEY_TZ_OFFSET 0
 #define PERSIST_KEY_TZ_OFFSET 0
+
+/* I assume there will never be a time zone with a 42-day offset. ;) */
 #define BAD_TZ_OFFSET_MAGIC (signed short)0xBEEF
 
 static MenuLayer *boss_menu = NULL;
@@ -94,7 +96,7 @@ static void in_received_handler( DictionaryIterator *data, void *context ){
     Tuple *tuple = dict_find(data, APPMSG_KEY_TZ_OFFSET);
 
     if ( tuple && tuple->type != TUPLE_INT )
-        return; /* Just bail here if this isn't the right type. */
+        return; /* Just bail here if this isn't the right type of data. */
 
     signed short offset = tuple->value->int16;
 
@@ -107,7 +109,7 @@ static void in_received_handler( DictionaryIterator *data, void *context ){
     }
 }
 
-/* Just shoot off an error log whe the timezone message is dropped. */
+/* Just shoot off an error log when the timezone message is dropped. */
 static void in_dropped_handler( const AppMessageResult reason, void *context ){
     APP_LOG(APP_LOG_LEVEL_ERROR, "An AppMessage was dropped: %d", reason);
 }

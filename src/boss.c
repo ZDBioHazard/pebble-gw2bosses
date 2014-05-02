@@ -115,10 +115,10 @@ void update_boss_times( const struct tm *time ){
 
 /*****************************************************************************/
 
-/* Luckily, GCC will deduplicate all these strings, saving us memory. */
+/* Luckily, GCC will de-duplicate all these strings, saving us memory. */
 /* TODO It would be cool if this info could be generated from a JSON file
  * via PebbleKitJS - ideally from ArenaNet APIs, but then we wouldn't have
- * the aformentioned automatic GCC memory deduplication without making a
+ * the aforementioned automatic GCC memory de-duplication without making a
  * complicated set of lookup tales, not to mention designing a format where
  * the data could fit in limited persistent storage chunks would be tricky. */
 /* XXX Don't forget to update BOSS_INDEX_MAX above! */
