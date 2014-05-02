@@ -74,6 +74,7 @@ static void menu_draw_row( GContext *ctx, const Layer *layer, MenuIndex *cell, v
     unsigned char width_list[] = { 0, 14, 24, 28, 38, 48, 52, 62, 72 };
     unsigned char width = width_list[0];
     char time_text[9] = { 0 };
+    unsigned char offset = 0;
     signed int timer = 0;
 
     graphics_context_set_text_color(ctx, GColorBlack);
@@ -103,23 +104,46 @@ static void menu_draw_row( GContext *ctx, const Layer *layer, MenuIndex *cell, v
                                    {width, MENU_CELL_HEIGHT + 2}},
                            GTextOverflowModeWordWrap,
                            GTextAlignmentRight, NULL);
+
+        /* Draw a reminder icon. */
+        if ( get_boss_reminder(cell->row) == true ){
+            /* Set the text frame offset so we have space to draw. */
+            offset = 8;
+
+            /* Draw an exclamation mark using 2 rects. */
+            graphics_draw_rect(ctx, (GRect){{4, 6}, {2, 12}});
+            graphics_draw_rect(ctx, (GRect){{4, 22}, {2, 2}});
+        }
     }
 
     /* Draw the event title. */
     graphics_draw_text(ctx, boss->name,
                        fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
-                       (GRect){{2, -2},
-                               {140 - width, (MENU_CELL_HEIGHT / 2) + 2}},
+                       (GRect){{2 + offset, -2},
+                              {140 - (width + offset),
+                               (MENU_CELL_HEIGHT / 2) + 2}},
                        GTextOverflowModeTrailingEllipsis,
                        GTextAlignmentLeft, NULL);
 
     /* Draw the event location. */
     graphics_draw_text(ctx, boss->zone,
                        fonts_get_system_font(FONT_KEY_GOTHIC_14),
-                       (GRect){{2, (MENU_CELL_HEIGHT / 2) - 3},
-                               {140 - width, (MENU_CELL_HEIGHT / 2) + 2}},
+                       (GRect){{2 + offset, (MENU_CELL_HEIGHT / 2) - 3},
+                               {140 - (width + offset),
+                                (MENU_CELL_HEIGHT / 2) + 2}},
                        GTextOverflowModeTrailingEllipsis,
                        GTextAlignmentLeft, NULL);
+}
+
+/*****************************************************************************/
+
+void menu_select_click( struct MenuLayer *layer, MenuIndex *cell, void *data ){
+    /* Only allow reminders to be set for upcoming events. */
+    if ( cell->section != MENU_SECTION_COMINGUP )
+        return;
+
+    toggle_boss_reminder(cell->row);
+    layer_mark_dirty(menu_layer_get_layer(layer));
 }
 
 /*****************************************************************************/
@@ -134,6 +158,7 @@ MenuLayer *boss_menu_layer_create( const GRect bounds ){
         .get_num_rows = menu_get_num_rows,
         .draw_header = menu_draw_header,
         .draw_row = menu_draw_row,
+        .select_click = menu_select_click,
     });
 
     return menu_layer;

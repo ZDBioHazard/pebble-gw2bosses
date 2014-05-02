@@ -25,6 +25,7 @@
 
 static struct boss boss_info[BOSS_COUNT]; /* Defined below. */
 static signed int boss_times[BOSS_COUNT] = { 0 };
+static bool boss_reminders[BOSS_COUNT] = { false };
 
 /*****************************************************************************/
 
@@ -62,6 +63,19 @@ signed int get_boss_timer( const boss_t index ){
     return boss_times[get_boss_index(false, index)];
 }
 
+/* Return the reminder status. */
+bool get_boss_reminder( const boss_t index ){
+    return boss_reminders[get_boss_index(false, index)];
+}
+
+/*****************************************************************************/
+
+/* Toggle the reminder state of a boss. */
+void toggle_boss_reminder( const boss_t index ){
+    boss_t boss = get_boss_index(false, index);
+    boss_reminders[boss] = !boss_reminders[boss];
+}
+
 /*****************************************************************************/
 
 /* Update the timer values in the boss list. */
@@ -75,7 +89,7 @@ void update_boss_times( const struct tm *time ){
         event.tm_sec  = 0;
 
         /* Add a day to events that have already happened today. */
-        if ( bad_mktime(&event) < bad_mktime(time) )
+        if ( bad_mktime(&event) <= bad_mktime(time) )
             /* It seems really bizarre, but changing the date like this
              * actually works with most mktime() implementations. o.O */
             event.tm_hour += 24;
@@ -84,6 +98,18 @@ void update_boss_times( const struct tm *time ){
          * ~3K of extra library code in the binary, and this case isn't
          * likely to trigger any of difftime()'s edge cases anyway. */
         boss_times[index] = (bad_mktime(&event) - bad_mktime(time));
+
+        /* Alert for reminders at 10:00, 5:00, and 0:01 before event start. */
+        /* FIXME If the device skips a second and misses one of these
+         * times, I'm not sure how to tell, or what to do about it. */
+        if ( boss_reminders[index] == true ){
+            /* Do a single pulse for upcoming event alerts. */
+            if ( boss_times[index] == 600 || boss_times[index] == 300 )
+                vibes_short_pulse();
+            /* Do a double pulse for events that are starting right now. */
+            else if ( boss_times[index] == 1 )
+                vibes_double_pulse();
+        }
     }
 }
 
