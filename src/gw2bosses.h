@@ -23,6 +23,8 @@
 
 #include <pebble.h>
 
+typedef unsigned char boss_t;
+
 struct boss {
     const unsigned char hour;
     const unsigned char min;
@@ -36,7 +38,7 @@ MenuLayer *boss_menu_layer_create( const GRect bounds );
 
 /* boss.c */
 void update_boss_times( const struct tm *time );
-struct boss *get_boss_info( const bool active, const unsigned char index );
+struct boss *get_boss_info( const bool active, const boss_t index );
 
 /* time.c */
 time_t bad_mktime( const struct tm *time );

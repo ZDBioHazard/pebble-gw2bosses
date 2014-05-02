@@ -20,7 +20,7 @@
 
 #include "gw2bosses.h"
 
-#define BOSS_INDEX_MAX 90
+#define BOSS_INDEX_MAX (boss_t)90
 #define BOSS_COUNT (BOSS_INDEX_MAX + 1)
 
 /* This is at the bottom of the file. */
@@ -30,7 +30,7 @@ static struct boss bosses[BOSS_COUNT];
 
 /* Update the timer values in the boss list. */
 void update_boss_times( const struct tm *time ){
-    unsigned char index = 0;
+    boss_t index = 0;
     struct tm event = *time;
 
     for ( index = 0 ; index <= BOSS_INDEX_MAX ; index++ ){
@@ -56,8 +56,8 @@ void update_boss_times( const struct tm *time ){
 /*****************************************************************************/
 
 /* Return the info struct for a boss. */
-struct boss *get_boss_info( const bool active, const unsigned char offset ){
-    unsigned char index = BOSS_INDEX_MAX;
+struct boss *get_boss_info( const bool active, const boss_t offset ){
+    boss_t index = BOSS_INDEX_MAX;
 
     /* Start at the end of the list and count up. Break at
      * the first entry that's larger than the previous entry. */
