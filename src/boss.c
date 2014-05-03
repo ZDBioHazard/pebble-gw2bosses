@@ -53,6 +53,12 @@ static boss_t get_boss_index( const bool active, const boss_t offset ){
 
 /*****************************************************************************/
 
+/* Return the number of bosses in the list. */
+boss_t get_boss_count( const bool active ){
+    /* TODO Actually go through the list and count for real. */
+    return ( active == true ) ? 1 : (BOSS_COUNT - 1);
+}
+
 /* Return the info struct for a boss. */
 const struct boss *get_boss_info( const bool active, const boss_t index ){
     return &boss_info[get_boss_index(active, index)];

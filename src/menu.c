@@ -27,9 +27,6 @@
 #define MENU_SECTION_CURRENT 0
 #define MENU_SECTION_COMINGUP 1
 
-#define MENU_CURRENT_COUNT 1
-#define MENU_COMINGUP_COUNT 32
-
 /*****************************************************************************/
 
 static int16_t menu_get_header_height( MenuLayer *layer, const uint16_t index, void *data ){
@@ -47,8 +44,7 @@ static uint16_t menu_get_num_sections( MenuLayer *layer, void *data ){
 }
 
 static uint16_t menu_get_num_rows( MenuLayer *layer, const uint16_t index, void *data ){
-    /* TODO There might be multiple concurrent events someday. */
-    return ( index == MENU_SECTION_CURRENT ) ? MENU_CURRENT_COUNT : MENU_COMINGUP_COUNT;
+    return get_boss_count(!index);
 }
 
 /*****************************************************************************/

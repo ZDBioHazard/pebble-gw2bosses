@@ -49,6 +49,7 @@ struct boss {
 MenuLayer *boss_menu_layer_create( const GRect bounds );
 
 /* boss.c */
+boss_t get_boss_count( const bool active );
 const struct boss *get_boss_info( const bool active, const boss_t index );
 signed int get_boss_timer( const boss_t index );
 bool get_boss_reminder( const bool active, const boss_t index );
