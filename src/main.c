@@ -20,12 +20,16 @@
 
 #include "gw2bosses.h"
 
-/* I assume there will never be a time zone with a 42-day offset. ;) */
-#define BAD_TZ_OFFSET_MAGIC (signed short)0xBEEF
-
 static MenuLayer *boss_menu = NULL;
 static TextLayer *tz_message = NULL;
 static signed short tz_offset = BAD_TZ_OFFSET_MAGIC;
+
+/*****************************************************************************/
+
+/* Return the tz_offset. */
+signed short get_tz_offset( void ){
+    return tz_offset;
+}
 
 /*****************************************************************************/
 

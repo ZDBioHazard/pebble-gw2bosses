@@ -32,6 +32,9 @@
 #define PERSIST_KEY_TZ_OFFSET 0 /* 2 bytes */
 #define PERSIST_KEY_REMINDERS 1 /* BOSS_COUNT bytes */
 
+/* I assume there will never be a time zone with a 42-day offset. ;) */
+#define BAD_TZ_OFFSET_MAGIC (signed short)0xBEEF
+
 /*****************************************************************************/
 
 typedef unsigned char boss_t;
@@ -44,6 +47,9 @@ struct boss {
 };
 
 /*****************************************************************************/
+
+/* main.c */
+signed short get_tz_offset( void );
 
 /* menu.c */
 MenuLayer *boss_menu_layer_create( const GRect bounds );
