@@ -116,7 +116,7 @@ void update_boss_times( const struct tm *time ){
         event.tm_sec  = 0;
 
         /* Add a day to events that have already happened today. */
-        if ( bad_mktime(&event) <= bad_mktime(time) )
+        if ( bad_difftime(&event, time) <= 0 )
             /* It seems really bizarre, but changing the date like this
              * actually works with most mktime() implementations. o.O */
             event.tm_hour += 24;
@@ -124,7 +124,7 @@ void update_boss_times( const struct tm *time ){
         /* Yeah, this should probably use difftime(), but that includes
          * ~3K of extra library code in the binary, and this case isn't
          * likely to trigger any of difftime()'s edge cases anyway. */
-        boss_times[index] = (bad_mktime(&event) - bad_mktime(time));
+        boss_times[index] = bad_difftime(&event, time);
 
         /* Alert for reminders at 10:00, 5:00, and 0:01 before event start. */
         /* FIXME If the device skips a second and misses one of these

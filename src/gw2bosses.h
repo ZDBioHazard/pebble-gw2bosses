@@ -32,12 +32,10 @@
 #define PERSIST_KEY_TZ_OFFSET 0 /* 2 bytes */
 #define PERSIST_KEY_REMINDERS 1 /* BOSS_COUNT bytes */
 
-/* I assume there will never be a time zone with a 42-day offset. ;) */
-#define BAD_TZ_OFFSET_MAGIC (signed short)0xBEEF
-
 /*****************************************************************************/
 
 typedef unsigned char boss_t;
+typedef signed short tz_offset_t;
 
 struct boss {
     const unsigned char hour;
@@ -47,9 +45,6 @@ struct boss {
 };
 
 /*****************************************************************************/
-
-/* main.c */
-signed short get_tz_offset( void );
 
 /* menu.c */
 MenuLayer *boss_menu_layer_create( const GRect bounds );
@@ -67,6 +62,12 @@ void toggle_boss_reminder( const bool active, const boss_t index );
 void update_boss_times( const struct tm *time );
 
 /* time.c */
-time_t bad_mktime( const struct tm *time );
+time_t bad_difftime( const struct tm *time1, const struct tm *time2 );
+
+void set_tz_offset( signed short offset );
+bool have_tz_offset( void );
+
+bool time_convert_utc_to_local( struct tm *time );
+bool time_convert_local_to_utc( struct tm *time );
 
 #endif /* #ifndef _GW2BOSSES_H */

@@ -22,20 +22,12 @@
 
 static MenuLayer *boss_menu = NULL;
 static TextLayer *tz_message = NULL;
-static signed short tz_offset = BAD_TZ_OFFSET_MAGIC;
-
-/*****************************************************************************/
-
-/* Return the tz_offset. */
-signed short get_tz_offset( void ){
-    return tz_offset;
-}
 
 /*****************************************************************************/
 
 static void tick_second_handler( struct tm *time, const TimeUnits unit ){
     /* Bail out here if the timezone isn't set. */
-    if ( tz_offset == BAD_TZ_OFFSET_MAGIC )
+    if ( have_tz_offset() == false )
         return;
 
     /* If the time zone message exists, we can remove it now. */
@@ -44,11 +36,9 @@ static void tick_second_handler( struct tm *time, const TimeUnits unit ){
         tz_message = NULL;
     }
 
-    /* Munge the time structure since we have no real way to get UTC time. */
-    time->tm_min += tz_offset;
-    time_t utc_ts = bad_mktime(time);
-    struct tm utc = *gmtime(&utc_ts);
-
+    /* Get the UTC time and update the timers with it. */
+    struct tm utc = *time;
+    time_convert_local_to_utc(&utc);
     update_boss_times(&utc);
 
     /* The menu layer is created hidden so we don't see all the timers
@@ -70,7 +60,7 @@ static void window_load( Window *window ){
 
     /* On the first run, the time zone offset must be fetched from the phone.
      * This creates a message box telling the user what's happening. */
-    if ( tz_offset == BAD_TZ_OFFSET_MAGIC ){
+    if ( have_tz_offset() == false ){
         tz_message = text_layer_create((GRect){{6, 52}, {132, 44}});
         text_layer_set_text(tz_message, "Getting time zone from your phone");
         text_layer_set_background_color(tz_message, GColorBlack);
@@ -100,18 +90,14 @@ static void window_unload( Window *window ){
 static void in_received_handler( DictionaryIterator *data, void *context ){
     Tuple *tuple = dict_find(data, APPMSG_KEY_TZ_OFFSET);
 
-    if ( tuple && tuple->type != TUPLE_INT )
-        return; /* Just bail here if this isn't the right type of data. */
+    /* Just bail here if this isn't the right type of data. */
+    if ( tuple == NULL || tuple->type != TUPLE_INT )
+        return;
 
-    signed short offset = tuple->value->int16;
-
-    /* Update the offset if it's different. */
+    /* Update the offset. */
+    tz_offset_t offset = tuple->value->int16;
     APP_LOG(APP_LOG_LEVEL_INFO, "Got offset %d from phone.", offset);
-    if ( tz_offset != offset ){
-        APP_LOG(APP_LOG_LEVEL_INFO, "Writing offset %d to storage.", offset);
-        persist_write_int(PERSIST_KEY_TZ_OFFSET, offset);
-        tz_offset = offset;
-    }
+    set_tz_offset(offset);
 }
 
 /* Just shoot off an error log when the timezone message is dropped. */
@@ -122,12 +108,6 @@ static void in_dropped_handler( const AppMessageResult reason, void *context ){
 /*****************************************************************************/
 
 int main( void ){
-    /* Try to set the time zone from persistent storage. */
-    if ( persist_exists(PERSIST_KEY_TZ_OFFSET) ){
-        tz_offset = persist_read_int(PERSIST_KEY_TZ_OFFSET);
-        APP_LOG(APP_LOG_LEVEL_INFO, "Got offset %d from storage.", tz_offset);
-    }
-
     /* Set-up the app messaging system so we can get an updated time zone. */
     app_message_register_inbox_received(in_received_handler);
     app_message_register_inbox_dropped(in_dropped_handler);

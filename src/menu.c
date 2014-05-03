@@ -94,12 +94,7 @@ static void menu_draw_row( GContext *ctx, const Layer *layer, MenuIndex *cell, v
         boss_tm.tm_year = 112; /* bad_mktime() has issues with 1900. ;) */
         boss_tm.tm_hour = boss->hour;
         boss_tm.tm_min  = boss->min;
-        /* Only munge the time if we have a time zone offset. */
-        if ( get_tz_offset() != BAD_TZ_OFFSET_MAGIC ){
-            boss_tm.tm_min -= get_tz_offset();
-            time_t boss_ts = bad_mktime(&boss_tm);
-            boss_tm = *localtime(&boss_ts);
-        }
+        time_convert_utc_to_local(&boss_tm);
 
         /* Create the event start timer. */
         if ( clock_is_24h_style() == true )
