@@ -70,7 +70,7 @@ static void menu_draw_header( GContext *ctx, const Layer *cell, const uint16_t i
 
 /* Draw individual rows. */
 static void menu_draw_row( GContext *ctx, const Layer *layer, MenuIndex *cell, void *data ){
-    struct boss *boss = get_boss_info(cell->section ? false : true, cell->row);
+    const struct boss *boss = get_boss_info(!cell->section, cell->row);
     unsigned char width_list[] = { 0, 14, 24, 28, 38, 48, 52, 62, 72 };
     unsigned char width = width_list[0];
     char time_text[9] = { 0 };

@@ -23,7 +23,7 @@
 #define BOSS_INDEX_MAX (boss_t)90
 #define BOSS_COUNT (BOSS_INDEX_MAX + 1)
 
-static struct boss boss_info[BOSS_COUNT]; /* Defined below. */
+static const struct boss boss_info[BOSS_COUNT]; /* Defined below. */
 static signed int boss_times[BOSS_COUNT] = { 0 };
 static bool boss_reminders[BOSS_COUNT] = { false };
 
@@ -54,8 +54,8 @@ static boss_t get_boss_index( const bool active, const boss_t offset ){
 /*****************************************************************************/
 
 /* Return the info struct for a boss. */
-struct boss *get_boss_info( const bool active, const boss_t offset ){
-    return &boss_info[get_boss_index(active, offset)];
+const struct boss *get_boss_info( const bool active, const boss_t index ){
+    return &boss_info[get_boss_index(active, index)];
 }
 
 /* Return the timer for a boss. */
@@ -144,7 +144,7 @@ void update_boss_times( const struct tm *time ){
  * the data could fit in limited persistent storage chunks would be tricky. */
 /* XXX Don't forget to update BOSS_INDEX_MAX above! */
 /* XXX Keeping this in ascending time order is IMPORTANT! */
-static struct boss boss_info[BOSS_COUNT] = {
+static const struct boss boss_info[BOSS_COUNT] = {
     { 0,  0, "The Shatterer", "Blazeridge Steppes"},
     { 0, 15, "Svanir Shaman", "Wayfarer Foothills"},
     { 0, 30, "Modniir Ulgoth", "Hirathi Hinterlands"},
