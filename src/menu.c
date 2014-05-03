@@ -104,16 +104,16 @@ static void menu_draw_row( GContext *ctx, const Layer *layer, MenuIndex *cell, v
                                    {width, MENU_CELL_HEIGHT + 2}},
                            GTextOverflowModeWordWrap,
                            GTextAlignmentRight, NULL);
+    }
 
-        /* Draw a reminder icon. */
-        if ( get_boss_reminder(cell->row) == true ){
-            /* Set the text frame offset so we have space to draw. */
-            offset = 8;
+    /* Draw a reminder icon. */
+    if ( get_boss_reminder(!cell->section, cell->row) == true ){
+        /* Set the text frame offset so we have space to draw. */
+        offset = 8;
 
-            /* Draw an exclamation point using 2 tiny rectangles. */
-            graphics_draw_rect(ctx, (GRect){{4, 6}, {2, 12}});
-            graphics_draw_rect(ctx, (GRect){{4, 22}, {2, 2}});
-        }
+        /* Draw an exclamation point using 2 tiny rectangles. */
+        graphics_draw_rect(ctx, (GRect){{4, 6}, {2, 12}});
+        graphics_draw_rect(ctx, (GRect){{4, 22}, {2, 2}});
     }
 
     /* Draw the event title. */
@@ -137,12 +137,8 @@ static void menu_draw_row( GContext *ctx, const Layer *layer, MenuIndex *cell, v
 
 /*****************************************************************************/
 
-void menu_select_click( struct MenuLayer *layer, MenuIndex *cell, void *data ){
-    /* Only allow reminders to be set for upcoming events. */
-    if ( cell->section != MENU_SECTION_COMINGUP )
-        return;
-
-    toggle_boss_reminder(cell->row);
+void menu_select_click( MenuLayer *layer, MenuIndex *cell, void *data ){
+    toggle_boss_reminder(!cell->section, cell->row);
     layer_mark_dirty(menu_layer_get_layer(layer));
 }
 

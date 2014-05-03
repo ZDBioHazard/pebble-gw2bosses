@@ -64,8 +64,8 @@ signed int get_boss_timer( const boss_t index ){
 }
 
 /* Return the reminder status. */
-bool get_boss_reminder( const boss_t index ){
-    return boss_reminders[get_boss_index(false, index)];
+bool get_boss_reminder( const bool active, const boss_t index ){
+    return boss_reminders[get_boss_index(active, index)];
 }
 
 /*****************************************************************************/
@@ -92,8 +92,8 @@ void load_boss_reminders( void ){
 }
 
 /* Toggle the reminder state of a boss. */
-void toggle_boss_reminder( const boss_t index ){
-    boss_t boss = get_boss_index(false, index);
+void toggle_boss_reminder( const bool active, const boss_t index ){
+    boss_t boss = get_boss_index(active, index);
     boss_reminders[boss] = !boss_reminders[boss];
 }
 
