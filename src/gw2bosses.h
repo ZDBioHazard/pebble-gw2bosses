@@ -23,10 +23,16 @@
 
 #include <pebble.h>
 
+/*****************************************************************************/
+
+/* AppMessage keys. */
 #define APPMSG_KEY_TZ_OFFSET 0
 
-#define PERSIST_KEY_TZ_OFFSET 0
-#define PERSIST_KEY_REMINDERS 1
+/* Persistent storage keys. */
+#define PERSIST_KEY_TZ_OFFSET 0 /* 2 bytes */
+#define PERSIST_KEY_REMINDERS 1 /* BOSS_COUNT bytes */
+
+/*****************************************************************************/
 
 typedef unsigned char boss_t;
 
@@ -37,17 +43,21 @@ struct boss {
     const char *zone;
 };
 
+/*****************************************************************************/
+
 /* menu.c */
 MenuLayer *boss_menu_layer_create( const GRect bounds );
 
 /* boss.c */
-void update_boss_times( const struct tm *time );
 struct boss *get_boss_info( const bool active, const boss_t index );
 signed int get_boss_timer( const boss_t index );
 bool get_boss_reminder( const boss_t index );
+
 void save_boss_reminders( void );
 void load_boss_reminders( void );
 void toggle_boss_reminder( const boss_t index );
+
+void update_boss_times( const struct tm *time );
 
 /* time.c */
 time_t bad_mktime( const struct tm *time );
