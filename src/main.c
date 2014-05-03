@@ -20,9 +20,6 @@
 
 #include "gw2bosses.h"
 
-#define APPMSG_KEY_TZ_OFFSET 0
-#define PERSIST_KEY_TZ_OFFSET 0
-
 /* I assume there will never be a time zone with a 42-day offset. ;) */
 #define BAD_TZ_OFFSET_MAGIC (signed short)0xBEEF
 
@@ -80,10 +77,14 @@ static void window_load( Window *window ){
         layer_add_child(window_layer, text_layer_get_layer(tz_message));
     }
 
+    load_boss_reminders();
+
     tick_timer_service_subscribe(SECOND_UNIT, tick_second_handler);
 }
 
 static void window_unload( Window *window ){
+    save_boss_reminders();
+
     if ( tz_message != NULL )
         text_layer_destroy(tz_message);
     menu_layer_destroy(boss_menu);

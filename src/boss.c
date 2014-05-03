@@ -70,6 +70,27 @@ bool get_boss_reminder( const boss_t index ){
 
 /*****************************************************************************/
 
+/* Save reminders to persistent storage. */
+void save_boss_reminders( void ){
+    if ( persist_write_data(PERSIST_KEY_REMINDERS, boss_reminders,
+                            sizeof(boss_reminders)) != sizeof(boss_reminders) )
+        APP_LOG(APP_LOG_LEVEL_ERROR, "Error writing reminders to storage.");
+    else
+        APP_LOG(APP_LOG_LEVEL_INFO, "Saved reminders to storage.");
+}
+
+/* Load reminders from persistent storage. */
+void load_boss_reminders( void ){
+    if ( persist_exists(PERSIST_KEY_REMINDERS) == false )
+        return;
+
+    if ( persist_read_data(PERSIST_KEY_REMINDERS, boss_reminders,
+                           sizeof(boss_reminders)) != sizeof(boss_reminders) )
+        APP_LOG(APP_LOG_LEVEL_ERROR, "Error reading reminders from storage.");
+    else
+        APP_LOG(APP_LOG_LEVEL_INFO, "Loaded reminders from storage.");
+}
+
 /* Toggle the reminder state of a boss. */
 void toggle_boss_reminder( const boss_t index ){
     boss_t boss = get_boss_index(false, index);

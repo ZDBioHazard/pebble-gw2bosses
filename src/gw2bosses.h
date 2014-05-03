@@ -23,6 +23,11 @@
 
 #include <pebble.h>
 
+#define APPMSG_KEY_TZ_OFFSET 0
+
+#define PERSIST_KEY_TZ_OFFSET 0
+#define PERSIST_KEY_REMINDERS 1
+
 typedef unsigned char boss_t;
 
 struct boss {
@@ -40,6 +45,8 @@ void update_boss_times( const struct tm *time );
 struct boss *get_boss_info( const bool active, const boss_t index );
 signed int get_boss_timer( const boss_t index );
 bool get_boss_reminder( const boss_t index );
+void save_boss_reminders( void );
+void load_boss_reminders( void );
 void toggle_boss_reminder( const boss_t index );
 
 /* time.c */
