@@ -143,9 +143,15 @@ static void menu_draw_row( GContext *ctx, const Layer *layer, MenuIndex *cell, v
     /* Draw a reminder icon. */
     if ( get_boss_reminder(!cell->section, cell->row) == true ){
         /* Set the text frame offset so we have space to draw. */
-        offset = 8;
+        offset = 10;
+
+        /* Draw a black cell. */
+        graphics_context_set_fill_color(ctx, GColorBlack);
+        graphics_fill_rect(ctx, (GRect){{0, 0}, {offset, MENU_CELL_HEIGHT}},
+                           0, GCornerNone);
 
         /* Draw an exclamation point using 2 tiny rectangles. */
+        graphics_context_set_stroke_color(ctx, GColorWhite);
         graphics_draw_rect(ctx, (GRect){{4, 6}, {2, 12}});
         graphics_draw_rect(ctx, (GRect){{4, 22}, {2, 2}});
     }
