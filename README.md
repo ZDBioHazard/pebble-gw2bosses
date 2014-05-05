@@ -23,8 +23,21 @@ This is a Pebble limitation.
 
 Using This Application
 ----------------------
-Just scroll up and down to see the next half-dozen events that are coming up.
-I'm working on a reminder and checklist system for one of the next versions.
+Scroll up and down to see the next world boss events that are coming up.
+Press select to set a reminder for the selected event.
+
+I'm working on a daily completion tracking system for one of the next versions.
+
+Event Reminders
+---------------
+When you set a reminder for an event, your watch will vibrate at 10 and 5
+minutes before, and at the event start.
+
+Reminders are saved on exit, and you will be reminded for that same time slot
+every day until you clear the reminder.
+
+Because watch applications are unloaded from memory when you exit them, you
+have to leave this application open for reminders to work.
 
 Limitations
 -----------
