@@ -3,8 +3,8 @@
     "shortName": "GW2 Boss Timers",
     "longName": "GW2 Boss Timers",
     "companyName": "ZDBioHazard",
-    "versionCode": 2,
-    "versionLabel": "1.1",
+    "versionCode": 3,
+    "versionLabel": "1.2",
     "watchapp": { "watchface": false },
     "appKeys": { "tz_offset": 0 },
     "resources": { "media": [ {
