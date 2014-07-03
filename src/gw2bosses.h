@@ -29,8 +29,9 @@
 #define APPMSG_KEY_TZ_OFFSET 0
 
 /* Persistent storage keys. */
-#define PERSIST_KEY_TZ_OFFSET 0 /* 2 bytes */
-#define PERSIST_KEY_REMINDERS 1 /* BOSS_COUNT bytes */
+#define PERSIST_KEY_TZ_OFFSET    0 /* int32_t bytes */
+#define PERSIST_KEY_DATA_VERSION 1 /* int32_t bytes */
+#define PERSIST_KEY_REMINDERS    2 /* (bool * BOSS_COUNT) bytes */
 
 /*****************************************************************************/
 

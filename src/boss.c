@@ -22,6 +22,7 @@
 
 #define BOSS_INDEX_MAX (boss_t)90
 #define BOSS_COUNT (BOSS_INDEX_MAX + 1)
+#define BOSS_DATA_VERSION (int32_t)201404150
 
 static const struct boss boss_info[BOSS_COUNT]; /* Defined below. */
 static signed int boss_times[BOSS_COUNT] = { 0 };
@@ -78,7 +79,9 @@ bool get_boss_reminder( const bool active, const boss_t index ){
 
 /* Save reminders to persistent storage. */
 void save_boss_reminders( void ){
-    if ( persist_write_data(PERSIST_KEY_REMINDERS, boss_reminders,
+    if ( persist_write_int(PERSIST_KEY_DATA_VERSION,
+                           BOSS_DATA_VERSION) < S_SUCCESS ||
+         persist_write_data(PERSIST_KEY_REMINDERS, boss_reminders,
                             sizeof(boss_reminders)) != sizeof(boss_reminders) )
         APP_LOG(APP_LOG_LEVEL_ERROR, "Error writing reminders to storage.");
     else
@@ -87,14 +90,25 @@ void save_boss_reminders( void ){
 
 /* Load reminders from persistent storage. */
 void load_boss_reminders( void ){
-    if ( persist_exists(PERSIST_KEY_REMINDERS) == false )
+    /* Do a bunch of sanity checks while we load the data. */
+    if ( persist_exists(PERSIST_KEY_DATA_VERSION) == false ||
+         persist_exists(PERSIST_KEY_REMINDERS) == false ||
+         persist_get_size(PERSIST_KEY_DATA_VERSION) != sizeof(int32_t) ||
+         persist_get_size(PERSIST_KEY_REMINDERS) != sizeof(boss_reminders) ||
+         persist_read_int(PERSIST_KEY_DATA_VERSION) != BOSS_DATA_VERSION ){
+        APP_LOG(APP_LOG_LEVEL_ERROR, "Reminder format mismatch; Discarding.");
         return;
+    }
 
+    /* Make sure that all the reminder data is read. */
     if ( persist_read_data(PERSIST_KEY_REMINDERS, boss_reminders,
-                           sizeof(boss_reminders)) != sizeof(boss_reminders) )
-        APP_LOG(APP_LOG_LEVEL_ERROR, "Error reading reminders from storage.");
-    else
-        APP_LOG(APP_LOG_LEVEL_INFO, "Loaded reminders from storage.");
+                           sizeof(boss_reminders)) != sizeof(boss_reminders) ){
+        APP_LOG(APP_LOG_LEVEL_ERROR, "Reminder list only partially read.");
+        memset(boss_reminders, false, sizeof(boss_reminders));
+        return;
+    }
+
+    APP_LOG(APP_LOG_LEVEL_INFO, "Loaded reminders from storage.");
 }
 
 /* Toggle the reminder state of a boss. */
