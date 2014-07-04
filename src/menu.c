@@ -44,7 +44,7 @@ static uint16_t menu_get_num_sections( MenuLayer *layer, void *data ){
 }
 
 static uint16_t menu_get_num_rows( MenuLayer *layer, const uint16_t index, void *data ){
-    return get_boss_count(!index);
+    return get_event_count(!index);
 }
 
 /*****************************************************************************/
@@ -66,7 +66,7 @@ static void menu_draw_header( GContext *ctx, const Layer *cell, const uint16_t i
 
 /* Draw individual rows. */
 static void menu_draw_row( GContext *ctx, const Layer *layer, MenuIndex *cell, void *data ){
-    const struct boss *boss = get_boss_info(!cell->section, cell->row);
+    const struct event *event = get_event_info(!cell->section, cell->row);
     unsigned char offset = 0;
     unsigned char width = 0;
 
@@ -75,7 +75,7 @@ static void menu_draw_row( GContext *ctx, const Layer *layer, MenuIndex *cell, v
     if ( cell->section == MENU_SECTION_COMINGUP ){
         unsigned char timer_width[] = { 0, 12, 20, 24, 32, 40, 44, 52, 60 };
         unsigned char start_width[] = { 0, 10, 16, 20, 26, 32, 42, 44, 50 };
-        signed int time = get_boss_timer(cell->row);
+        signed int time = get_event_timer(cell->row);
         char timer[9] = { 0 };
         char start[9] = { 0 };
 
@@ -90,20 +90,20 @@ static void menu_draw_row( GContext *ctx, const Layer *layer, MenuIndex *cell, v
         /* We need a representation of the event start time, so make one.
          * It also needs to be adjusted for the current time zone. Argh. :S */
         /* FIXME Someday, Pebble might have a working timezone system. :( */
-        struct tm boss_tm = { 0 };
-        boss_tm.tm_year = 112; /* bad_mktime() has issues with 1900. ;) */
-        boss_tm.tm_hour = boss->hour;
-        boss_tm.tm_min  = boss->min;
-        time_convert_utc_to_local(&boss_tm);
+        struct tm event_tm = { 0 };
+        event_tm.tm_year = 112; /* bad_mktime() has issues with 1900. ;) */
+        event_tm.tm_hour = event->hour;
+        event_tm.tm_min  = event->min;
+        time_convert_utc_to_local(&event_tm);
 
         /* Create the event start timer. */
         if ( clock_is_24h_style() == true )
             snprintf(start, sizeof(start), "@%02d:%02d",
-                     boss_tm.tm_hour, boss_tm.tm_min);
+                     event_tm.tm_hour, event_tm.tm_min);
         else /* Silly 12-hour format. :p */
             snprintf(start, sizeof(start), "%d:%02d %s",
-                     ( boss_tm.tm_hour == 0 ) ? 12 : boss_tm.tm_hour % 12,
-                     boss_tm.tm_min, ( boss_tm.tm_hour < 12 ) ? "AM" : "PM");
+                     ( event_tm.tm_hour == 0 ) ? 12 : event_tm.tm_hour % 12,
+                     event_tm.tm_min, ( event_tm.tm_hour < 12 ) ? "AM" : "PM");
 
         /* Set the box widths based on time string lengths. I tried using
          * graphics_text_layout_get_content_size() for this, but it seemed
@@ -128,7 +128,7 @@ static void menu_draw_row( GContext *ctx, const Layer *layer, MenuIndex *cell, v
                            GTextOverflowModeWordWrap,
                            GTextAlignmentRight, NULL);
 
-        /* Draw the boss real time. */
+        /* Draw the event real time. */
         graphics_draw_text(ctx, start,
                            fonts_get_system_font(FONT_KEY_GOTHIC_14),
                            (GRect){{142 - width, (MENU_CELL_HEIGHT / 2) - 2},
@@ -141,7 +141,7 @@ static void menu_draw_row( GContext *ctx, const Layer *layer, MenuIndex *cell, v
     graphics_context_set_text_color(ctx, GColorBlack);
 
     /* Draw a reminder icon. */
-    if ( get_boss_reminder(!cell->section, cell->row) == true ){
+    if ( get_event_reminder(!cell->section, cell->row) == true ){
         /* Set the text frame offset so we have space to draw. */
         offset = 10;
 
@@ -157,7 +157,7 @@ static void menu_draw_row( GContext *ctx, const Layer *layer, MenuIndex *cell, v
     }
 
     /* Draw the event title. */
-    graphics_draw_text(ctx, boss->name,
+    graphics_draw_text(ctx, event->name,
                        fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
                        (GRect){{2 + offset, -2},
                               {140 - (width + offset),
@@ -166,7 +166,7 @@ static void menu_draw_row( GContext *ctx, const Layer *layer, MenuIndex *cell, v
                        GTextAlignmentLeft, NULL);
 
     /* Draw the event location. */
-    graphics_draw_text(ctx, boss->zone,
+    graphics_draw_text(ctx, event->zone,
                        fonts_get_system_font(FONT_KEY_GOTHIC_14),
                        (GRect){{2 + offset, (MENU_CELL_HEIGHT / 2) - 3},
                                {140 - (width + offset),
@@ -178,13 +178,13 @@ static void menu_draw_row( GContext *ctx, const Layer *layer, MenuIndex *cell, v
 /*****************************************************************************/
 
 void menu_select_click( MenuLayer *layer, MenuIndex *cell, void *data ){
-    toggle_boss_reminder(!cell->section, cell->row);
+    toggle_event_reminder(!cell->section, cell->row);
     layer_mark_dirty(menu_layer_get_layer(layer));
 }
 
 /*****************************************************************************/
 
-MenuLayer *boss_menu_layer_create( const GRect bounds ){
+MenuLayer *event_menu_layer_create( const GRect bounds ){
     MenuLayer *menu_layer = menu_layer_create(bounds);
 
     menu_layer_set_callbacks(menu_layer, NULL, (MenuLayerCallbacks){

@@ -20,113 +20,113 @@
 
 #include "gw2bosses.h"
 
-#define BOSS_INDEX_MAX (boss_t)95
-#define BOSS_COUNT (BOSS_INDEX_MAX + 1)
-#define BOSS_DATA_VERSION (int32_t)201406170
+#define EVENT_INDEX_MAX (event_t)95
+#define EVENT_COUNT (EVENT_INDEX_MAX + 1)
+#define EVENT_DATA_VERSION (int32_t)201406170
 
-static const struct boss boss_info[BOSS_COUNT]; /* Defined below. */
-static signed int boss_times[BOSS_COUNT] = { 0 };
-static bool boss_reminders[BOSS_COUNT] = { false };
+static const struct event event_info[EVENT_COUNT]; /* Defined below. */
+static signed int event_times[EVENT_COUNT] = { 0 };
+static bool event_reminders[EVENT_COUNT] = { false };
 
 /*****************************************************************************/
 
-/* Find and return the desired boss' array index. */
-static boss_t get_boss_index( const bool active, const boss_t offset ){
-    boss_t index = BOSS_INDEX_MAX;
+/* Find and return the desired event's array index. */
+static event_t get_event_index( const bool active, const event_t offset ){
+    event_t index = EVENT_INDEX_MAX;
 
     /* Start at the end of the list and count up. Break at
      * the first entry that's larger than the previous entry. */
-    for ( index = BOSS_INDEX_MAX ; index > 0 ; index-- )
-        if ( boss_times[index] < boss_times[index - 1] )
+    for ( index = EVENT_INDEX_MAX ; index > 0 ; index-- )
+        if ( event_times[index] < event_times[index - 1] )
             break;
 
-    /* Only one boss can be current, so just return it now. */
-    /* TODO More than one boss can be active at a time. */
+    /* Only one event can be current, so just return it now. */
+    /* TODO More than one event can be active at a time. */
     if ( active == true )
-        return (index == 0) ? BOSS_INDEX_MAX : index - 1;
+        return (index == 0) ? EVENT_INDEX_MAX : index - 1;
 
     /* Wrap the index if it goes over the end of the array. */
-    if ( index + offset > BOSS_INDEX_MAX )
-        return (index + offset) - BOSS_COUNT;
+    if ( index + offset > EVENT_INDEX_MAX )
+        return (index + offset) - EVENT_COUNT;
 
     return index + offset;
 }
 
 /*****************************************************************************/
 
-/* Return the number of bosses in the list. */
-boss_t get_boss_count( const bool active ){
+/* Return the number of events in the list. */
+event_t get_event_count( const bool active ){
     /* TODO Actually go through the list and count for real. */
-    return ( active == true ) ? 1 : (BOSS_COUNT - 1);
+    return ( active == true ) ? 1 : (EVENT_COUNT - 1);
 }
 
-/* Return the info struct for a boss. */
-const struct boss *get_boss_info( const bool active, const boss_t index ){
-    return &boss_info[get_boss_index(active, index)];
+/* Return the info struct for a event. */
+const struct event *get_event_info( const bool active, const event_t index ){
+    return &event_info[get_event_index(active, index)];
 }
 
-/* Return the timer for a boss. */
-signed int get_boss_timer( const boss_t index ){
-    return boss_times[get_boss_index(false, index)];
+/* Return the timer for a event. */
+signed int get_event_timer( const event_t index ){
+    return event_times[get_event_index(false, index)];
 }
 
 /* Return the reminder status. */
-bool get_boss_reminder( const bool active, const boss_t index ){
-    return boss_reminders[get_boss_index(active, index)];
+bool get_event_reminder( const bool active, const event_t index ){
+    return event_reminders[get_event_index(active, index)];
 }
 
 /*****************************************************************************/
 
 /* Save reminders to persistent storage. */
-void save_boss_reminders( void ){
+void save_event_reminders( void ){
     if ( persist_write_int(PERSIST_KEY_DATA_VERSION,
-                           BOSS_DATA_VERSION) < S_SUCCESS ||
-         persist_write_data(PERSIST_KEY_REMINDERS, boss_reminders,
-                            sizeof(boss_reminders)) != sizeof(boss_reminders) )
+                           EVENT_DATA_VERSION) < S_SUCCESS ||
+         persist_write_data(PERSIST_KEY_REMINDERS, event_reminders,
+                            sizeof(event_reminders)) != sizeof(event_reminders) )
         APP_LOG(APP_LOG_LEVEL_ERROR, "Error writing reminders to storage.");
     else
         APP_LOG(APP_LOG_LEVEL_INFO, "Saved reminders to storage.");
 }
 
 /* Load reminders from persistent storage. */
-void load_boss_reminders( void ){
+void load_event_reminders( void ){
     /* Do a bunch of sanity checks while we load the data. */
     if ( persist_exists(PERSIST_KEY_DATA_VERSION) == false ||
          persist_exists(PERSIST_KEY_REMINDERS) == false ||
          persist_get_size(PERSIST_KEY_DATA_VERSION) != sizeof(int32_t) ||
-         persist_get_size(PERSIST_KEY_REMINDERS) != sizeof(boss_reminders) ||
-         persist_read_int(PERSIST_KEY_DATA_VERSION) != BOSS_DATA_VERSION ){
+         persist_get_size(PERSIST_KEY_REMINDERS) != sizeof(event_reminders) ||
+         persist_read_int(PERSIST_KEY_DATA_VERSION) != EVENT_DATA_VERSION ){
         APP_LOG(APP_LOG_LEVEL_ERROR, "Reminder format mismatch; Discarding.");
         return;
     }
 
     /* Make sure that all the reminder data is read. */
-    if ( persist_read_data(PERSIST_KEY_REMINDERS, boss_reminders,
-                           sizeof(boss_reminders)) != sizeof(boss_reminders) ){
+    if ( persist_read_data(PERSIST_KEY_REMINDERS, event_reminders,
+                           sizeof(event_reminders)) != sizeof(event_reminders) ){
         APP_LOG(APP_LOG_LEVEL_ERROR, "Reminder list only partially read.");
-        memset(boss_reminders, false, sizeof(boss_reminders));
+        memset(event_reminders, false, sizeof(event_reminders));
         return;
     }
 
     APP_LOG(APP_LOG_LEVEL_INFO, "Loaded reminders from storage.");
 }
 
-/* Toggle the reminder state of a boss. */
-void toggle_boss_reminder( const bool active, const boss_t index ){
-    boss_t boss = get_boss_index(active, index);
-    boss_reminders[boss] = !boss_reminders[boss];
+/* Toggle the reminder state of a event. */
+void toggle_event_reminder( const bool active, const event_t index ){
+    event_t event = get_event_index(active, index);
+    event_reminders[event] = !event_reminders[event];
 }
 
 /*****************************************************************************/
 
-/* Update the timer values in the boss list. */
-void update_boss_times( const struct tm *time ){
-    boss_t index = 0;
+/* Update the timer values in the event list. */
+void update_event_times( const struct tm *time ){
+    event_t index = 0;
     struct tm event = *time;
 
-    for ( index = 0 ; index <= BOSS_INDEX_MAX ; index++ ){
-        event.tm_hour = boss_info[index].hour;
-        event.tm_min  = boss_info[index].min;
+    for ( index = 0 ; index <= EVENT_INDEX_MAX ; index++ ){
+        event.tm_hour = event_info[index].hour;
+        event.tm_min  = event_info[index].min;
         event.tm_sec  = 0;
 
         /* Add a day to events that have already happened today. */
@@ -138,17 +138,17 @@ void update_boss_times( const struct tm *time ){
         /* Yeah, this should probably use difftime(), but that includes
          * ~3K of extra library code in the binary, and this case isn't
          * likely to trigger any of difftime()'s edge cases anyway. */
-        boss_times[index] = bad_difftime(&event, time);
+        event_times[index] = bad_difftime(&event, time);
 
         /* Alert for reminders at 10:00, 5:00, and 0:01 before event start. */
         /* FIXME If the device skips a second and misses one of these
          * times, I'm not sure how to tell, or what to do about it. */
-        if ( boss_reminders[index] == true ){
+        if ( event_reminders[index] == true ){
             /* Do a single pulse for upcoming event alerts. */
-            if ( boss_times[index] == 600 || boss_times[index] == 300 )
+            if ( event_times[index] == 600 || event_times[index] == 300 )
                 vibes_short_pulse();
             /* Do a double pulse for events that are starting right now. */
-            else if ( boss_times[index] == 1 )
+            else if ( event_times[index] == 1 )
                 vibes_double_pulse();
         }
     }
@@ -162,9 +162,9 @@ void update_boss_times( const struct tm *time ){
  * the aforementioned automatic GCC memory de-duplication without making a
  * complicated set of lookup tales, not to mention designing a format where
  * the data could fit in limited persistent storage chunks would be tricky. */
-/* XXX Don't forget to update BOSS_INDEX_MAX above! */
+/* XXX Don't forget to update EVENT_INDEX_MAX above! */
 /* XXX Keeping this in ascending time order is IMPORTANT! */
-static const struct boss boss_info[BOSS_COUNT] = {
+static const struct event event_info[EVENT_COUNT] = {
     { 0,  0, "Taidha Covington", "Bloodtide Coast"},
     { 0, 15, "Svanir Shaman", "Wayfarer Foothills"},
     { 0, 30, "Megadestroyer", "Mount Maelstrom"},

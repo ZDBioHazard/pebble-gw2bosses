@@ -31,14 +31,14 @@
 /* Persistent storage keys. */
 #define PERSIST_KEY_TZ_OFFSET    0 /* int32_t bytes */
 #define PERSIST_KEY_DATA_VERSION 1 /* int32_t bytes */
-#define PERSIST_KEY_REMINDERS    2 /* (bool * BOSS_COUNT) bytes */
+#define PERSIST_KEY_REMINDERS    2 /* (bool * EVENT_COUNT) bytes */
 
 /*****************************************************************************/
 
-typedef unsigned char boss_t;
+typedef unsigned char event_t;
 typedef signed short tz_offset_t;
 
-struct boss {
+struct event {
     const unsigned char hour;
     const unsigned char min;
     const char *name;
@@ -48,19 +48,19 @@ struct boss {
 /*****************************************************************************/
 
 /* menu.c */
-MenuLayer *boss_menu_layer_create( const GRect bounds );
+MenuLayer *event_menu_layer_create( const GRect bounds );
 
-/* boss.c */
-boss_t get_boss_count( const bool active );
-const struct boss *get_boss_info( const bool active, const boss_t index );
-signed int get_boss_timer( const boss_t index );
-bool get_boss_reminder( const bool active, const boss_t index );
+/* event.c */
+event_t get_event_count( const bool active );
+const struct event *get_event_info( const bool active, const event_t index );
+signed int get_event_timer( const event_t index );
+bool get_event_reminder( const bool active, const event_t index );
 
-void save_boss_reminders( void );
-void load_boss_reminders( void );
-void toggle_boss_reminder( const bool active, const boss_t index );
+void save_event_reminders( void );
+void load_event_reminders( void );
+void toggle_event_reminder( const bool active, const event_t index );
 
-void update_boss_times( const struct tm *time );
+void update_event_times( const struct tm *time );
 
 /* time.c */
 time_t bad_difftime( const struct tm *time1, const struct tm *time2 );

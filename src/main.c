@@ -20,7 +20,7 @@
 
 #include "gw2bosses.h"
 
-static MenuLayer *boss_menu = NULL;
+static MenuLayer *event_menu = NULL;
 static TextLayer *tz_message = NULL;
 
 /*****************************************************************************/
@@ -39,12 +39,12 @@ static void tick_second_handler( struct tm *time, const TimeUnits unit ){
     /* Get the UTC time and update the timers with it. */
     struct tm utc = *time;
     time_convert_local_to_utc(&utc);
-    update_boss_times(&utc);
+    update_event_times(&utc);
 
     /* The menu layer is created hidden so we don't see all the timers
      * set to 0:00 before the first valid second. It can be shown now. */
-    layer_set_hidden(menu_layer_get_layer(boss_menu), false);
-    layer_mark_dirty(menu_layer_get_layer(boss_menu));
+    layer_set_hidden(menu_layer_get_layer(event_menu), false);
+    layer_mark_dirty(menu_layer_get_layer(event_menu));
 }
 
 /*****************************************************************************/
@@ -52,11 +52,11 @@ static void tick_second_handler( struct tm *time, const TimeUnits unit ){
 static void window_load( Window *window ){
     Layer *window_layer = window_get_root_layer(window);
 
-    /* Create the boss menu, and bind it to this window. */
-    boss_menu = boss_menu_layer_create(layer_get_frame(window_layer));
-    menu_layer_set_click_config_onto_window(boss_menu, window);
-    layer_add_child(window_layer, menu_layer_get_layer(boss_menu));
-    layer_set_hidden(menu_layer_get_layer(boss_menu), true);
+    /* Create the event menu, and bind it to this window. */
+    event_menu = event_menu_layer_create(layer_get_frame(window_layer));
+    menu_layer_set_click_config_onto_window(event_menu, window);
+    layer_add_child(window_layer, menu_layer_get_layer(event_menu));
+    layer_set_hidden(menu_layer_get_layer(event_menu), true);
 
     /* On the first run, the time zone offset must be fetched from the phone.
      * This creates a message box telling the user what's happening. */
@@ -71,17 +71,17 @@ static void window_load( Window *window ){
         layer_add_child(window_layer, text_layer_get_layer(tz_message));
     }
 
-    load_boss_reminders();
+    load_event_reminders();
 
     tick_timer_service_subscribe(SECOND_UNIT, tick_second_handler);
 }
 
 static void window_unload( Window *window ){
-    save_boss_reminders();
+    save_event_reminders();
 
     if ( tz_message != NULL )
         text_layer_destroy(tz_message);
-    menu_layer_destroy(boss_menu);
+    menu_layer_destroy(event_menu);
 }
 
 /*****************************************************************************/
