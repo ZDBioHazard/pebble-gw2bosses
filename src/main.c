@@ -65,8 +65,7 @@ static void window_load( Window *window ){
         text_layer_set_text(tz_message, "Getting time zone from your phone");
         text_layer_set_background_color(tz_message, GColorBlack);
         text_layer_set_text_alignment(tz_message, GTextAlignmentCenter);
-        text_layer_set_font(tz_message,
-                            fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
+        text_layer_set_font(tz_message, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
         text_layer_set_text_color(tz_message, GColorWhite);
         layer_add_child(window_layer, text_layer_get_layer(tz_message));
     }

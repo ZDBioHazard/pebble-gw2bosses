@@ -57,11 +57,9 @@ static void menu_draw_header( GContext *ctx, const Layer *cell, const uint16_t i
     graphics_context_set_text_color(ctx, GColorBlack);
 
     graphics_draw_rect(ctx, (GRect){{-1, 0}, {146, MENU_HEADER_HEIGHT}});
-    graphics_draw_text(ctx, titles[index],
-                       fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
+    graphics_draw_text(ctx, titles[index], fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
                        (GRect){{0, -2}, {144, MENU_HEADER_HEIGHT}},
-                       GTextOverflowModeTrailingEllipsis,
-                       GTextAlignmentCenter, NULL);
+                       GTextOverflowModeTrailingEllipsis, GTextAlignmentCenter, NULL);
 }
 
 /* Draw individual rows. */
@@ -117,24 +115,19 @@ static void menu_draw_row( GContext *ctx, const Layer *layer, MenuIndex *cell, v
 
         /* Fill the timer cell. */
         graphics_fill_rect(ctx, (GRect){{144 - width, 0},
-                                        {width, MENU_CELL_HEIGHT}},
-                           0, GCornerNone);
+                                        {width, MENU_CELL_HEIGHT}}, 0, GCornerNone);
 
         /* Draw the event timer. */
-        graphics_draw_text(ctx, timer,
-                           fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD),
+        graphics_draw_text(ctx, timer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD),
                            (GRect){{142 - width, -4},
                                    {width, (MENU_CELL_HEIGHT / 2) + 4}},
-                           GTextOverflowModeWordWrap,
-                           GTextAlignmentRight, NULL);
+                           GTextOverflowModeWordWrap, GTextAlignmentRight, NULL);
 
         /* Draw the event real time. */
-        graphics_draw_text(ctx, start,
-                           fonts_get_system_font(FONT_KEY_GOTHIC_14),
+        graphics_draw_text(ctx, start, fonts_get_system_font(FONT_KEY_GOTHIC_14),
                            (GRect){{142 - width, (MENU_CELL_HEIGHT / 2) - 2},
                                    {width, (MENU_CELL_HEIGHT / 2) + 2}},
-                           GTextOverflowModeWordWrap,
-                           GTextAlignmentRight, NULL);
+                           GTextOverflowModeWordWrap, GTextAlignmentRight, NULL);
     }
 
     /* Change the text color back to black for the left cell. */
@@ -147,8 +140,7 @@ static void menu_draw_row( GContext *ctx, const Layer *layer, MenuIndex *cell, v
 
         /* Draw a black cell. */
         graphics_context_set_fill_color(ctx, GColorBlack);
-        graphics_fill_rect(ctx, (GRect){{0, 0}, {offset, MENU_CELL_HEIGHT}},
-                           0, GCornerNone);
+        graphics_fill_rect(ctx, (GRect){{0, 0}, {offset, MENU_CELL_HEIGHT}}, 0, GCornerNone);
 
         /* Draw an exclamation point using 2 tiny rectangles. */
         graphics_context_set_stroke_color(ctx, GColorWhite);
@@ -157,22 +149,16 @@ static void menu_draw_row( GContext *ctx, const Layer *layer, MenuIndex *cell, v
     }
 
     /* Draw the event title. */
-    graphics_draw_text(ctx, event->name,
-                       fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
+    graphics_draw_text(ctx, event->name, fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
                        (GRect){{2 + offset, -2},
-                              {140 - (width + offset),
-                               (MENU_CELL_HEIGHT / 2) + 2}},
-                       GTextOverflowModeTrailingEllipsis,
-                       GTextAlignmentLeft, NULL);
+                               {140 - (width + offset), (MENU_CELL_HEIGHT / 2) + 2}},
+                       GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft, NULL);
 
     /* Draw the event location. */
-    graphics_draw_text(ctx, event->zone,
-                       fonts_get_system_font(FONT_KEY_GOTHIC_14),
+    graphics_draw_text(ctx, event->zone, fonts_get_system_font(FONT_KEY_GOTHIC_14),
                        (GRect){{2 + offset, (MENU_CELL_HEIGHT / 2) - 3},
-                               {140 - (width + offset),
-                                (MENU_CELL_HEIGHT / 2) + 2}},
-                       GTextOverflowModeTrailingEllipsis,
-                       GTextAlignmentLeft, NULL);
+                               {140 - (width + offset), (MENU_CELL_HEIGHT / 2) + 2}},
+                       GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft, NULL);
 }
 
 /*****************************************************************************/

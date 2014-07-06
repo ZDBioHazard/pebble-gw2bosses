@@ -79,8 +79,7 @@ bool get_event_reminder( const bool active, const event_t index ){
 
 /* Save reminders to persistent storage. */
 void save_event_reminders( void ){
-    if ( persist_write_int(PERSIST_KEY_DATA_VERSION,
-                           EVENT_DATA_VERSION) < S_SUCCESS ||
+    if ( persist_write_int(PERSIST_KEY_DATA_VERSION, EVENT_DATA_VERSION) < S_SUCCESS ||
          persist_write_data(PERSIST_KEY_REMINDERS, event_reminders,
                             sizeof(event_reminders)) != sizeof(event_reminders) )
         APP_LOG(APP_LOG_LEVEL_ERROR, "Error writing reminders to storage.");
