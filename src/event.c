@@ -23,6 +23,7 @@
 #define EVENT_INDEX_MAX (event_t)95
 #define EVENT_COUNT (EVENT_INDEX_MAX + 1)
 #define EVENT_DATA_VERSION (int32_t)201406170
+#define EVENT_DURATION (15 * 60) /* TODO Use more accurate per-event times. */
 
 static const struct event event_info[EVENT_COUNT]; /* Defined below. */
 static signed int event_times[EVENT_COUNT] = { 0 };
@@ -40,10 +41,14 @@ static event_t get_event_index( const bool active, const event_t offset ){
         if ( event_times[index] < event_times[index - 1] )
             break;
 
-    /* Only one event can be current, so just return it now. */
-    /* TODO More than one event can be active at a time. */
-    if ( active == true )
-        return (index == 0) ? EVENT_INDEX_MAX : index - 1;
+    /* Count backwards for active events. */
+    if ( active == true ){
+        event_t count = get_event_count(active);
+        if ( index - (count - offset) < 0 )
+            return EVENT_COUNT - ((count - index) - offset);
+
+        return index - (count - offset);
+    }
 
     /* Wrap the index if it goes over the end of the array. */
     if ( index + offset > EVENT_INDEX_MAX )
@@ -56,8 +61,16 @@ static event_t get_event_index( const bool active, const event_t offset ){
 
 /* Return the number of events in the list. */
 event_t get_event_count( const bool active ){
-    /* TODO Actually go through the list and count for real. */
-    return ( active == true ) ? 1 : (EVENT_COUNT - 1);
+    event_t index = 0;
+    event_t count = 0;
+
+    /* Consider an event active if it's x-minutes less than 24-hours away. */
+    for ( index = 0 ; index <= EVENT_INDEX_MAX ; index++ )
+        if ( event_times[index] > (24 * 60 * 60) - EVENT_DURATION )
+            count++;
+
+    /* If the number of items is ever zero, the section will be deleted. */
+    return ( active == true ) ? count : (EVENT_COUNT - count);
 }
 
 /* Return the info struct for a event. */

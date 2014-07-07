@@ -41,6 +41,9 @@ static void tick_second_handler( struct tm *time, const TimeUnits unit ){
     time_convert_local_to_utc(&utc);
     update_event_times(&utc);
 
+    /* Reload the menu in case row counts change. */
+    menu_layer_reload_data(event_menu);
+
     /* The menu layer is created hidden so we don't see all the timers
      * set to 0:00 before the first valid second. It can be shown now. */
     layer_set_hidden(menu_layer_get_layer(event_menu), false);
