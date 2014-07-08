@@ -65,24 +65,24 @@ static void menu_draw_header( GContext *ctx, const Layer *cell, const uint16_t i
 /* Draw individual rows. */
 static void menu_draw_row( GContext *ctx, const Layer *layer, MenuIndex *cell, void *data ){
     const struct event *event = get_event_info(!cell->section, cell->row);
-    unsigned char offset = 0;
-    unsigned char width = 0;
+    uint8_t offset = 0;
+    uint8_t width = 0;
 
     /* Skip the timer on the current entries. */
     /* TODO Display an uptime counter for the current event. */
     if ( cell->section == MENU_SECTION_COMINGUP ){
-        unsigned char timer_width[] = { 0, 12, 20, 24, 32, 40, 44, 52, 60 };
-        unsigned char start_width[] = { 0, 10, 16, 20, 26, 32, 42, 44, 50 };
-        signed int time = get_event_timer(cell->row);
+        uint8_t timer_width[] = { 0, 12, 20, 24, 32, 40, 44, 52, 60 };
+        uint8_t start_width[] = { 0, 10, 16, 20, 26, 32, 42, 44, 50 };
+        uint32_t time = get_event_timer(cell->row);
         char timer[9] = { 0 };
         char start[9] = { 0 };
 
         /* Create the time string. Use a different formula for > 1hr times. */
         if ( time >= 3600 )
-            snprintf(timer, sizeof(timer), "%d:%02d:%02d",
+            snprintf(timer, sizeof(timer), "%"PRIu32":%02"PRIu32":%02"PRIu32,
                      time / 3600, (time / 60) % 60, time % 60);
         else
-            snprintf(timer, sizeof(timer), "%d:%02d",
+            snprintf(timer, sizeof(timer), "%"PRIu32":%02"PRIu32,
                      time / 60, time % 60);
 
         /* We need a representation of the event start time, so make one.

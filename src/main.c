@@ -108,8 +108,8 @@ static void in_received_handler( DictionaryIterator *data, void *context ){
         return;
 
     /* Update the offset. */
-    tz_offset_t offset = tuple->value->int16;
-    APP_LOG(APP_LOG_LEVEL_INFO, "Got offset %d from phone.", offset);
+    int32_t offset = tuple->value->int32;
+    APP_LOG(APP_LOG_LEVEL_INFO, "Got offset %"PRId32" from phone.", offset);
     set_tz_offset(offset);
 }
 

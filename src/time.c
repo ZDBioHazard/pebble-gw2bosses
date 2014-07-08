@@ -21,18 +21,18 @@
 #include "gw2bosses.h"
 
 /* I assume there will never be a time zone with a 42-day offset. ;) */
-#define BAD_TZ_OFFSET (tz_offset_t)0xBEEF
+#define BAD_TZ_OFFSET (int32_t)0xBEEFCAFE
 
 /* Don't read tz_offset directly, use get_tz_offset(), as that will
  * attempt to initialize tz_offset it the first time it's called. */
-static tz_offset_t tz_offset = BAD_TZ_OFFSET;
+static int32_t tz_offset = BAD_TZ_OFFSET;
 
 /*****************************************************************************/
 
 /* Pebble doesn't have a working mktime(), so I wrote my own.
  * Note: This only works properly for the years 1901 to 2099. */
 static time_t bad_mktime( const struct tm *time ){
-    short mdays[] = { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 };
+    uint16_t mdays[] = { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 };
 
     return ( /* Awww yeah, dat return... */
         /* Start by converting years to days. */
@@ -57,18 +57,18 @@ time_t bad_difftime( const struct tm *time1, const struct tm *time2 ){
 /*****************************************************************************/
 
 /* Return the time zone offset. */
-static tz_offset_t get_tz_offset( void ){
+static int32_t get_tz_offset( void ){
     /* Load the offset from storage if it isn't set yet. */
     if ( tz_offset == BAD_TZ_OFFSET && persist_exists(PERSIST_KEY_TZ_OFFSET) ){
         tz_offset = persist_read_int(PERSIST_KEY_TZ_OFFSET);
-        APP_LOG(APP_LOG_LEVEL_INFO, "Got offset %d from storage.", tz_offset);
+        APP_LOG(APP_LOG_LEVEL_INFO, "Got offset %"PRId32" from storage.", tz_offset);
     }
 
     return tz_offset;
 }
 
 /* Set the time zone offset. */
-void set_tz_offset( tz_offset_t offset ){
+void set_tz_offset( const int32_t offset ){
     /* Just stop if nothing changed. */
     if ( get_tz_offset() == offset )
         return;
@@ -76,7 +76,7 @@ void set_tz_offset( tz_offset_t offset ){
     tz_offset = offset;
 
     /* Write the offset to storage if it's different than what we have. */
-    APP_LOG(APP_LOG_LEVEL_INFO, "Writing offset %d to storage.", tz_offset);
+    APP_LOG(APP_LOG_LEVEL_INFO, "Writing offset %"PRId32" to storage.", tz_offset);
     persist_write_int(PERSIST_KEY_TZ_OFFSET, tz_offset);
 }
 

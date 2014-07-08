@@ -22,6 +22,7 @@
 #define _GW2BOSSES_H
 
 #include <pebble.h>
+#include <inttypes.h>
 
 /*****************************************************************************/
 
@@ -35,12 +36,9 @@
 
 /*****************************************************************************/
 
-typedef unsigned char event_t;
-typedef signed short tz_offset_t;
-
 struct event {
-    const unsigned char hour;
-    const unsigned char min;
+    const uint8_t hour;
+    const uint8_t min;
     const char *name;
     const char *zone;
 };
@@ -51,21 +49,21 @@ struct event {
 MenuLayer *event_menu_layer_create( const GRect bounds );
 
 /* event.c */
-event_t get_event_count( const bool active );
-const struct event *get_event_info( const bool active, const event_t index );
-signed int get_event_timer( const event_t index );
-bool get_event_reminder( const bool active, const event_t index );
+uint8_t get_event_count( const bool active );
+const struct event *get_event_info( const bool active, const uint8_t index );
+uint32_t get_event_timer( const uint8_t index );
+bool get_event_reminder( const bool active, const uint8_t index );
 
 void save_event_reminders( void );
 void load_event_reminders( void );
-void toggle_event_reminder( const bool active, const event_t index );
+void toggle_event_reminder( const bool active, const uint8_t index );
 
 void update_event_times( const struct tm *time );
 
 /* time.c */
 time_t bad_difftime( const struct tm *time1, const struct tm *time2 );
 
-void set_tz_offset( signed short offset );
+void set_tz_offset( const int32_t offset );
 bool have_tz_offset( void );
 
 bool time_convert_utc_to_local( struct tm *time );

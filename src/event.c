@@ -20,20 +20,20 @@
 
 #include "gw2bosses.h"
 
-#define EVENT_INDEX_MAX (event_t)113
+#define EVENT_INDEX_MAX (uint8_t)113
 #define EVENT_COUNT (EVENT_INDEX_MAX + 1)
 #define EVENT_DATA_VERSION (int32_t)201406171
-#define EVENT_DURATION (15 * 60) /* TODO Use more accurate per-event times. */
+#define EVENT_DURATION (uint32_t)(15 * 60) /* TODO Use per-event times. */
 
 static const struct event event_info[EVENT_COUNT]; /* Defined below. */
-static signed int event_times[EVENT_COUNT] = { 0 };
+static uint32_t event_times[EVENT_COUNT] = { 0 };
 static bool event_reminders[EVENT_COUNT] = { false };
 
 /*****************************************************************************/
 
 /* Find and return the desired event's array index. */
-static event_t get_event_index( const bool active, const event_t offset ){
-    event_t index = EVENT_INDEX_MAX;
+static uint8_t get_event_index( const bool active, const uint8_t offset ){
+    uint8_t index = EVENT_INDEX_MAX;
 
     /* Start at the end of the list and count up. Break at
      * the first entry that's larger than the previous entry. */
@@ -43,7 +43,7 @@ static event_t get_event_index( const bool active, const event_t offset ){
 
     /* Count backwards for active events. */
     if ( active == true ){
-        event_t count = get_event_count(active);
+        uint8_t count = get_event_count(active);
         if ( index - (count - offset) < 0 )
             return EVENT_COUNT - ((count - index) - offset);
 
@@ -60,9 +60,9 @@ static event_t get_event_index( const bool active, const event_t offset ){
 /*****************************************************************************/
 
 /* Return the number of events in the list. */
-event_t get_event_count( const bool active ){
-    event_t index = 0;
-    event_t count = 0;
+uint8_t get_event_count( const bool active ){
+    uint8_t index = 0;
+    uint8_t count = 0;
 
     /* Consider an event active if it's x-minutes less than 24-hours away. */
     for ( index = 0 ; index <= EVENT_INDEX_MAX ; index++ )
@@ -74,17 +74,17 @@ event_t get_event_count( const bool active ){
 }
 
 /* Return the info struct for a event. */
-const struct event *get_event_info( const bool active, const event_t index ){
+const struct event *get_event_info( const bool active, const uint8_t index ){
     return &event_info[get_event_index(active, index)];
 }
 
 /* Return the timer for a event. */
-signed int get_event_timer( const event_t index ){
+uint32_t get_event_timer( const uint8_t index ){
     return event_times[get_event_index(false, index)];
 }
 
 /* Return the reminder status. */
-bool get_event_reminder( const bool active, const event_t index ){
+bool get_event_reminder( const bool active, const uint8_t index ){
     return event_reminders[get_event_index(active, index)];
 }
 
@@ -124,8 +124,8 @@ void load_event_reminders( void ){
 }
 
 /* Toggle the reminder state of a event. */
-void toggle_event_reminder( const bool active, const event_t index ){
-    event_t event = get_event_index(active, index);
+void toggle_event_reminder( const bool active, const uint8_t index ){
+    uint8_t event = get_event_index(active, index);
     event_reminders[event] = !event_reminders[event];
 }
 
@@ -133,7 +133,7 @@ void toggle_event_reminder( const bool active, const event_t index ){
 
 /* Update the timer values in the event list. */
 void update_event_times( const struct tm *time ){
-    event_t index = 0;
+    uint8_t index = 0;
     struct tm event = *time;
 
     for ( index = 0 ; index <= EVENT_INDEX_MAX ; index++ ){
