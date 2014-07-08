@@ -59,7 +59,9 @@ time_t bad_difftime( const struct tm *time1, const struct tm *time2 ){
 /* Return the time zone offset. */
 static int32_t get_tz_offset( void ){
     /* Load the offset from storage if it isn't set yet. */
-    if ( tz_offset == BAD_TZ_OFFSET && persist_exists(PERSIST_KEY_TZ_OFFSET) ){
+    if ( tz_offset == BAD_TZ_OFFSET &&
+         persist_exists(PERSIST_KEY_TZ_OFFSET) == true &&
+         persist_get_size(PERSIST_KEY_TZ_OFFSET) == sizeof(tz_offset) ){
         tz_offset = persist_read_int(PERSIST_KEY_TZ_OFFSET);
         APP_LOG(APP_LOG_LEVEL_INFO, "Got offset %"PRId32" from storage.", tz_offset);
     }
