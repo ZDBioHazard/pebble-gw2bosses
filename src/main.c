@@ -22,6 +22,7 @@
 
 static MenuLayer *event_menu = NULL;
 static TextLayer *tz_message = NULL;
+static bool first_tick = true;
 
 /*****************************************************************************/
 
@@ -29,12 +30,6 @@ static void tick_second_handler( struct tm *time, const TimeUnits unit ){
     /* Bail out here if the timezone isn't set. */
     if ( have_tz_offset() == false )
         return;
-
-    /* If the time zone message exists, we can remove it now. */
-    if ( tz_message != NULL ){
-        text_layer_destroy(tz_message);
-        tz_message = NULL;
-    }
 
     /* Get the UTC time and update the timers with it. */
     struct tm utc = *time;
@@ -44,9 +39,25 @@ static void tick_second_handler( struct tm *time, const TimeUnits unit ){
     /* Reload the menu in case row counts change. */
     menu_layer_reload_data(event_menu);
 
-    /* The menu layer is created hidden so we don't see all the timers
-     * set to 0:00 before the first valid second. It can be shown now. */
-    layer_set_hidden(menu_layer_get_layer(event_menu), false);
+    /* Stuff to do on the first tick. */
+    if ( first_tick == true ){
+        /* If the time zone message exists, we can remove it now. */
+        if ( tz_message != NULL ){
+            text_layer_destroy(tz_message);
+            tz_message = NULL;
+        }
+
+        /* Set the selection to the first menu item on startup. */
+        menu_layer_set_selected_index(event_menu, (MenuIndex){0, 0},
+                                      MenuRowAlignBottom, false);
+
+        /* The menu layer is created hidden so we don't see
+         * all the timers set to 0:00 before the first tick. */
+        layer_set_hidden(menu_layer_get_layer(event_menu), false);
+
+        first_tick = false;
+    }
+
     layer_mark_dirty(menu_layer_get_layer(event_menu));
 }
 
